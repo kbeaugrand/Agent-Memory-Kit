@@ -1,0 +1,8 @@
+# Keep compiled Python and caches out of the published npm package.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+tests/

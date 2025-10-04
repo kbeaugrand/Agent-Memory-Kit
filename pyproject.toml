@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aimem"
+dynamic = ["version"]
+description = "Initialize or update cross-tool AI agent memory (Kiro + GitHub Copilot) for a project."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Kevin BEAUGRAND" }]
+keywords = ["ai", "memory", "kiro", "copilot", "agents", "cli", "steering", "hooks"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+]
+dependencies = []
+
+[project.scripts]
+aimem = "aimem.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.5",
+    "mypy>=1.8",
+]
+
+[project.urls]
+Homepage = "https://github.com/kbeaugrand/Agent-Memory-Kit"
+Repository = "https://github.com/kbeaugrand/Agent-Memory-Kit"
+Issues = "https://github.com/kbeaugrand/Agent-Memory-Kit/issues"
+
+[tool.hatch.version]
+path = "src/aimem/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aimem"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/aimem",
+    "tests",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+extend-exclude = ["src/aimem/templates/hooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM", "C4"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+mypy_path = "src"
+files = ["src/aimem"]
+exclude = "src/aimem/templates/"
+namespace_packages = true
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

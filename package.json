@@ -1,0 +1,49 @@
+{
+  "name": "aimem",
+  "version": "0.1.0",
+  "description": "Initialize or update cross-tool AI agent memory (Kiro + GitHub Copilot) for a project.",
+  "keywords": [
+    "ai",
+    "memory",
+    "kiro",
+    "copilot",
+    "agents",
+    "cli",
+    "steering",
+    "hooks"
+  ],
+  "homepage": "https://github.com/kbeaugrand/Agent-Memory-Kit#readme",
+  "bugs": {
+    "url": "https://github.com/kbeaugrand/Agent-Memory-Kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kbeaugrand/Agent-Memory-Kit.git"
+  },
+  "license": "MIT",
+  "author": "Kevin BEAUGRAND",
+  "bin": {
+    "aimem": "bin/aimem.js"
+  },
+  "files": [
+    "bin/aimem.js",
+    "src/aimem/**/*.py",
+    "src/aimem/**/*.md",
+    "src/aimem/**/*.json",
+    "src/aimem/**/*.txt",
+    "src/aimem/**/*.kiro.hook",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "scripts": {
+    "test": "node bin/aimem.js --version"
+  }
+}
