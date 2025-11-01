@@ -1,0 +1,61 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "aimem-inject-session",
+      "description": "Inject AI memory into context when a session starts.",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "{{PYTHON_COMMAND}} .aimem/hooks/inject_memory.py --format text"
+      },
+      "timeout": 20,
+      "enabled": true
+    },
+    {
+      "name": "aimem-inject-prompt",
+      "description": "Refresh AI memory context on each user prompt.",
+      "trigger": "UserPromptSubmit",
+      "action": {
+        "type": "command",
+        "command": "{{PYTHON_COMMAND}} .aimem/hooks/inject_memory.py --format text"
+      },
+      "timeout": 20,
+      "enabled": true
+    },
+    {
+      "name": "aimem-guard-memory",
+      "description": "Block writing secrets into memory files before a tool runs.",
+      "trigger": "PreToolUse",
+      "action": {
+        "type": "command",
+        "command": "{{PYTHON_COMMAND}} .aimem/hooks/guard_memory.py --mode kiro"
+      },
+      "timeout": 15,
+      "enabled": true
+    },
+    {
+      "name": "aimem-consolidate-memory",
+      "description": "Normalize and de-duplicate memory files after they are saved.",
+      "trigger": "PostFileSave",
+      "matcher": "\\.aimem/memory/.*\\.md$",
+      "action": {
+        "type": "command",
+        "command": "{{PYTHON_COMMAND}} .aimem/hooks/consolidate_memory.py"
+      },
+      "timeout": 20,
+      "enabled": true
+    },
+    {
+      "name": "aimem-persist-memory",
+      "description": "Remind the agent to persist durable memories before finishing.",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Review this session. If any durable, non-secret facts, decisions, conventions, commands, or gotchas emerged, record them to the appropriate memory scope using .aimem/hooks/record_memory.py (project for team-shared repo facts, user for personal cross-project preferences, session for ephemeral notes). Never store secrets. If nothing durable emerged, do nothing."
+      },
+      "timeout": 60,
+      "enabled": true
+    }
+  ]
+}

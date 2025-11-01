@@ -1,0 +1,3 @@
+# aimem — ignore ephemeral and local memory artifacts
+.aimem/memory/session/
+.aimem/backups/
