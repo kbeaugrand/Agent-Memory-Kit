@@ -26,6 +26,7 @@
     "aimem": "bin/aimem.js"
   },
   "files": [
+    "bin/check-python.js",
     "bin/aimem.js",
     "src/aimem/**/*.py",
     "src/aimem/**/*.md",
@@ -44,6 +45,7 @@
     "win32"
   ],
   "scripts": {
+    "preinstall": "node bin/check-python.js",
     "test": "node bin/aimem.js --version"
   }
 }
