@@ -16,8 +16,8 @@ repair or update the generated files.
 | --- | --- |
 | Canonical memory | `.aimem/memory/project.md` (committed), `.aimem/memory/session/current.md` (ephemeral), `~/.aimem/memory/user.md` (global) |
 | Project-local hook scripts | `.aimem/hooks/*.py` — self-contained, standard-library-only Python |
-| Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
-| GitHub Copilot | `.github/copilot-instructions.md` (block), `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
+| Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/agents/memory-initializer.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
+| GitHub Copilot | `.github/copilot-instructions.md` (block), `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-initializer.agent.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
 | Cross-tool | `AGENTS.md` (block), `.gitignore` (block), `.aimem/config.json`, `.aimem/manifest.json` |
 
 ## How memory works after init
@@ -25,7 +25,8 @@ repair or update the generated files.
 - **Read** — a `SessionStart` hook injects your memory into the agent's context
   automatically (Kiro via stdout, Copilot via `additionalContext`).
 - **Write** — steering/instructions tell agents to persist durable facts with
-  `record_memory.py`; a `memory-curator` agent consolidates and de-duplicates.
+  `record_memory.py`; a `memory-initializer` agent seeds project facts and a
+  `memory-curator` agent consolidates and de-duplicates.
 - **Guard** — a `PreToolUse` hook blocks writing secrets into memory files.
 - **Consolidate** — a post-edit hook normalizes and de-duplicates memory files.
 

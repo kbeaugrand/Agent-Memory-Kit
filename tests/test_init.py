@@ -21,10 +21,12 @@ EXPECTED = [
     ".gitignore",
     ".kiro/steering/aimem-memory.md",
     ".kiro/steering/product.md",
+    ".kiro/agents/memory-initializer.md",
     ".kiro/agents/memory-curator.md",
     ".kiro/hooks/aimem-memory.kiro.hook",
     ".github/copilot-instructions.md",
     ".github/instructions/aimem-memory.instructions.md",
+    ".github/agents/memory-initializer.agent.md",
     ".github/agents/memory-curator.agent.md",
     ".github/hooks/aimem-memory.json",
 ]

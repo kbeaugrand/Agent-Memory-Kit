@@ -31,12 +31,14 @@ KIRO_STEERING_MEMORY = ".kiro/steering/aimem-memory.md"
 KIRO_STEERING_PRODUCT = ".kiro/steering/product.md"
 KIRO_STEERING_TECH = ".kiro/steering/tech.md"
 KIRO_STEERING_STRUCTURE = ".kiro/steering/structure.md"
+KIRO_AGENT_INITIALIZER = ".kiro/agents/memory-initializer.md"
 KIRO_AGENT_CURATOR = ".kiro/agents/memory-curator.md"
 KIRO_HOOK = ".kiro/hooks/aimem-memory.kiro.hook"
 
 # GitHub Copilot artifacts.
 COPILOT_INSTRUCTIONS = ".github/copilot-instructions.md"
 COPILOT_MEMORY_INSTRUCTIONS = ".github/instructions/aimem-memory.instructions.md"
+COPILOT_AGENT_INITIALIZER = ".github/agents/memory-initializer.agent.md"
 COPILOT_AGENT_CURATOR = ".github/agents/memory-curator.agent.md"
 COPILOT_HOOK = ".github/hooks/aimem-memory.json"
 

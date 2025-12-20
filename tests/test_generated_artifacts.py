@@ -48,7 +48,12 @@ def test_kiro_steering_declares_inclusion(tmp_path: Path) -> None:
 
 def test_agents_have_frontmatter(tmp_path: Path) -> None:
     root = _init(tmp_path)
+    assert (
+        (root / ".kiro/agents/memory-initializer.md").read_text(encoding="utf-8").startswith("---")
+    )
     assert (root / ".kiro/agents/memory-curator.md").read_text(encoding="utf-8").startswith("---")
+    initializer = (root / ".github/agents/memory-initializer.agent.md").read_text(encoding="utf-8")
+    assert "name: memory-initializer" in initializer
     copilot = (root / ".github/agents/memory-curator.agent.md").read_text(encoding="utf-8")
     assert "name: memory-curator" in copilot
 

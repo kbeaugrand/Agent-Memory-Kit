@@ -272,6 +272,11 @@ def _build_plan(
                     _render("kiro/steering_structure.md", variables),
                 ),
                 project(
+                    paths.KIRO_AGENT_INITIALIZER,
+                    WriteMode.MANAGED,
+                    _render("kiro/agent_memory_initializer.md", variables),
+                ),
+                project(
                     paths.KIRO_AGENT_CURATOR,
                     WriteMode.MANAGED,
                     _render("kiro/agent_memory_curator.md", variables),
@@ -296,6 +301,11 @@ def _build_plan(
                     paths.COPILOT_MEMORY_INSTRUCTIONS,
                     WriteMode.MANAGED,
                     _render("copilot/aimem_memory.instructions.md", variables),
+                ),
+                project(
+                    paths.COPILOT_AGENT_INITIALIZER,
+                    WriteMode.MANAGED,
+                    _render("copilot/agent_memory_initializer.agent.md", variables),
                 ),
                 project(
                     paths.COPILOT_AGENT_CURATOR,
