@@ -42,7 +42,10 @@ def build_context(config: dict) -> str:
         parts.append("----- {0} ({1}) -----\n{2}".format(_LABELS[scope], rel, cleaned))
     if not parts:
         return ""
-    header = "AI MEMORY (injected by aimem). Treat as established project truth.\n\n"
+    header = (
+        "AI MEMORY (injected by aimem). Treat as durable project context; "
+        "the current explicit user request comes first.\n\n"
+    )
     return header + "\n\n".join(parts)
 
 

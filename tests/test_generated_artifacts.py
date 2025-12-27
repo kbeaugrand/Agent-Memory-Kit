@@ -64,3 +64,64 @@ def test_no_unresolved_template_tokens(tmp_path: Path) -> None:
         if path.is_file():
             text = path.read_text(encoding="utf-8", errors="ignore")
             assert "{{" not in text, path
+
+
+def test_generated_instructions_require_memory_approval(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    files = [
+        root / ".github/instructions/aimem-memory.instructions.md",
+        root / ".kiro/steering/aimem-memory.md",
+        root / ".github/copilot-instructions.md",
+        root / "AGENTS.md",
+    ]
+
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        assert "Never activate memory silently" in text
+        assert "Approval required before activation" in text
+        assert "secrets" in text
+
+    detailed = (root / ".github/instructions/aimem-memory.instructions.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Memory candidate detected." in detailed
+    assert "Scope: PROJECT | USER | SESSION" in detailed
+    assert "full conversation transcripts" in detailed
+
+
+def test_memory_agents_require_approval_before_durable_writes(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    files = [
+        root / ".github/agents/memory-curator.agent.md",
+        root / ".kiro/agents/memory-curator.md",
+        root / ".github/agents/memory-initializer.agent.md",
+        root / ".kiro/agents/memory-initializer.md",
+    ]
+
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        assert "explicit approval" in text
+        assert "full conversation transcripts" in text
+        assert "Never store secrets" in text
+
+
+def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+
+    root = tmp_path / "proj"
+    root.mkdir()
+    assert main(["init", "-C", str(root), "--both", "--no-input", "--user"]) == 0
+
+    project = (root / ".aimem/memory/project.md").read_text(encoding="utf-8")
+    session = (root / ".aimem/memory/session/current.md").read_text(encoding="utf-8")
+    user = (home / ".aimem/memory/user.md").read_text(encoding="utf-8")
+
+    assert "explicit approval" in project
+    assert "temporary plans" in project
+    assert "Session memory is not durable memory" in session
+    assert "present it as a PROJECT or USER memory candidate" in session
+    assert "cross-project preferences" in user
+    assert "project-specific facts" in user

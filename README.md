@@ -24,11 +24,28 @@ repair or update the generated files.
 
 - **Read** — a `SessionStart` hook injects your memory into the agent's context
   automatically (Kiro via stdout, Copilot via `additionalContext`).
-- **Write** — steering/instructions tell agents to persist durable facts with
-  `record_memory.py`; a `memory-initializer` agent seeds project facts and a
-  `memory-curator` agent consolidates and de-duplicates.
+- **Propose** — steering/instructions tell agents to identify durable memory candidates,
+  show the exact proposed entry, explain the scope and reason, and ask before activation.
+- **Write** — after explicit approval, or when you directly ask the agent to record
+  memory, agents persist entries with `record_memory.py`; a `memory-initializer` agent can
+  seed project facts during explicit initialization and a `memory-curator` agent reviews,
+  consolidates, and de-duplicates approved memory.
 - **Guard** — a `PreToolUse` hook blocks writing secrets into memory files.
 - **Consolidate** — a post-edit hook normalizes and de-duplicates memory files.
+
+Memory is durable, validated, reusable knowledge. Project memory is committed and shared
+with the team. User memory is personal and stays in your home directory. Session memory is
+temporary scratch space for the current task and is not durable memory.
+
+Agents must not silently activate durable memory. A candidate should be important to
+future work, likely to remain true, reusable across future interactions, validated by the
+user or repository evidence, and self-contained enough for a future agent to act on.
+
+Do not memorize secrets, credentials, tokens, private keys, sensitive personal data,
+temporary plans, task progress, work in progress, unvalidated assumptions, one-off
+implementation details, or full conversation transcripts. If explicit user instructions
+conflict with existing memory, the current request wins and the conflict should be
+surfaced instead of silently editing memory.
 
 ## Install & run
 
