@@ -18,6 +18,10 @@ SESSION_MEMORY_DIR = ".aimem/memory/session"
 SESSION_MEMORY = ".aimem/memory/session/current.md"
 USER_MEMORY = "~/.aimem/memory/user.md"
 
+# Per-agent memory (coday-style agent-scoped memory), committed with the project.
+AGENTS_MEMORY_DIR = ".aimem/memory/agents"
+AGENTS_MEMORY_README = ".aimem/memory/agents/README.md"
+
 # Project-local, self-contained Python hook scripts.
 HOOKS_DIR = ".aimem/hooks"
 HOOK_COMMON = ".aimem/hooks/_common.py"
@@ -25,6 +29,7 @@ HOOK_INJECT = ".aimem/hooks/inject_memory.py"
 HOOK_RECORD = ".aimem/hooks/record_memory.py"
 HOOK_CONSOLIDATE = ".aimem/hooks/consolidate_memory.py"
 HOOK_GUARD = ".aimem/hooks/guard_memory.py"
+HOOK_MANAGE = ".aimem/hooks/manage_memory.py"
 
 # Kiro artifacts.
 KIRO_STEERING_MEMORY = ".kiro/steering/aimem-memory.md"

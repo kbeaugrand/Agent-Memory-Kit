@@ -191,6 +191,7 @@ def _variables(python_command: str) -> dict[str, str]:
         "PROJECT_MEMORY": paths.PROJECT_MEMORY,
         "SESSION_MEMORY": paths.SESSION_MEMORY,
         "USER_MEMORY": paths.USER_MEMORY,
+        "AGENTS_MEMORY_DIR": paths.AGENTS_MEMORY_DIR,
         "HOOKS_DIR": paths.HOOKS_DIR,
     }
 
@@ -224,9 +225,15 @@ def _build_plan(
             _render("hooks/consolidate_memory.py", variables),
         ),
         project(paths.HOOK_GUARD, WriteMode.MANAGED, _render("hooks/guard_memory.py", variables)),
+        project(paths.HOOK_MANAGE, WriteMode.MANAGED, _render("hooks/manage_memory.py", variables)),
         project(paths.PROJECT_MEMORY, WriteMode.SEED, _render("memory/project.md", variables)),
         project(
             paths.SESSION_MEMORY, WriteMode.SEED, _render("memory/session_current.md", variables)
+        ),
+        project(
+            paths.AGENTS_MEMORY_README,
+            WriteMode.SEED,
+            _render("memory/agents_readme.md", variables),
         ),
         project(paths.AGENTS_FILE, WriteMode.SHARED, _render("shared/agents_block.md", variables)),
         project(

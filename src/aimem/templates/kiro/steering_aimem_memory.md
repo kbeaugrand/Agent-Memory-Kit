@@ -11,6 +11,17 @@ memory as established project context, but always follow the current explicit us
 first. If memory and the user's request conflict, follow the user and surface the conflict
 instead of silently editing memory.
 
+## Context vs memory
+
+Context is everything available right now: the current request, open files, recent
+conversation, and injected memory. Memory is only the small, durable subset worth carrying
+into *future* sessions. Keep them distinct:
+
+- Do not treat transient conversation as memory, and never dump everything into memory.
+- Prefer summarizing a long thread over memorizing it.
+- Oversized or noisy memory degrades answers as much as missing memory; curate when it
+  grows. Injected memory is capped with a reminder when it gets large.
+
 ## Memory scopes
 
 - **Project memory** — `{{PROJECT_MEMORY}}` (committed, team-shared): durable repository
@@ -19,6 +30,9 @@ instead of silently editing memory.
   preferences explicitly provided by the user.
 - **Session memory** — `{{SESSION_MEMORY}}` (ephemeral, not committed): temporary working
   notes for the current task only.
+- **Agent memory** — `{{AGENTS_MEMORY_DIR}}/<agent>.md` (committed, per-agent): durable
+  facts specific to one agent rather than the whole team. Not injected by default; see
+  "Managing memory".
 
 Apply memory in this order:
 
@@ -74,6 +88,23 @@ recording script:
 Never edit generated assistant projection files directly. Change canonical memory files
 through an approved memory action or the generated scripts.
 
+## Managing memory
+
+Memory entries are addressable by scope, section, and 1-based index. Inspect and curate
+them with the management script instead of hand-editing:
+
+```
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py deprecate --scope project --section Gotchas --index 2
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py restore --scope project --section Gotchas --index 2
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py delete --scope project --match "outdated note"
+```
+
+Prefer **deprecate** (a reversible soft-delete) over **delete**: a deprecated entry stays
+on disk but is excluded from injected context, so history is preserved and mistakes are
+recoverable. Hard-delete only after review. Record agent-specific facts with
+`record_memory.py --scope agent --agent <name>`.
+
 ## Security
 
 Never store secrets, tokens, passwords, or personal data in memory. A `PreToolUse` guard
@@ -82,6 +113,7 @@ but approval and careful review are still required. Keep memory safe to commit a
 
 ## Curation
 
-Keep memory concise. When it grows or drifts, switch to the **memory-curator** agent to
-review candidates, consolidate duplicates, and propose stale entries for deprecation or
-deletion before changing active memory.
+Keep memory concise. When a section grows past its warning threshold, drifts, or fills
+with stale entries, switch to the **memory-curator** agent to review candidates,
+consolidate duplicates, deprecate stale entries (a reversible soft-delete), and delete
+only after review.

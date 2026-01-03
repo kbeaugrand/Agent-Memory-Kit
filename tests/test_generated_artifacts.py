@@ -125,3 +125,43 @@ def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) 
     assert "present it as a PROJECT or USER memory candidate" in session
     assert "cross-project preferences" in user
     assert "project-specific facts" in user
+
+
+def test_generated_guidance_documents_management_and_scopes(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    for path in (
+        root / ".github/instructions/aimem-memory.instructions.md",
+        root / ".kiro/steering/aimem-memory.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "Context vs memory" in text
+        assert "manage_memory.py" in text
+        assert "Agent memory" in text
+        assert "soft-delete" in text
+
+    for path in (
+        root / ".github/agents/memory-curator.agent.md",
+        root / ".kiro/agents/memory-curator.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert "manage_memory.py" in text
+        assert "soft-delete" in text
+
+
+def test_agent_memory_readme_generated(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    readme = root / ".aimem/memory/agents/README.md"
+    assert readme.is_file()
+    text = readme.read_text(encoding="utf-8")
+    assert "Agent-scoped memory" in text
+    assert "--scope agent" in text
+
+
+def test_config_declares_agent_scope_and_budgets(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    config = json.loads((root / ".aimem/config.json").read_text(encoding="utf-8"))
+    assert config["scopes"]["agent"]["dir"] == ".aimem/memory/agents"
+    assert config["scopes"]["agent"]["inject"] == "none"
+    assert config["memory"]["warn_entries_per_section"] > 0
+    assert config["memory"]["max_injection_chars"] > 0
+    assert config["memory"]["deprecation_marker"] == "[DEPRECATED]"

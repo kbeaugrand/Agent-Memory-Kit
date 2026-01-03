@@ -14,9 +14,13 @@ conversation transcripts, or ephemeral task notes (use session memory for those)
 Preferred way to add an entry:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Commands" --text "..."
 
+Review or curate entries (list, deprecate, restore, delete) with:
+  {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project
+
 Keep entries concise, self-contained, and grouped under the headings below. Prefer
-updating an existing bullet over adding a duplicate. This header comment is stripped
-before injection, so it costs no context tokens.
+updating an existing bullet over adding a duplicate, and prefer deprecating a stale entry
+(a reversible soft-delete) over deleting it. This header comment is stripped before
+injection, so it costs no context tokens.
 -->
 
 ## Conventions

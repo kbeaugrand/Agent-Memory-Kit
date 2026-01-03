@@ -22,7 +22,8 @@ _TITLES = {"project": "Project Memory", "user": "User Memory", "session": "Sessi
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Record a fact into AI memory.")
-    parser.add_argument("--scope", required=True, choices=_common.SCOPES)
+    parser.add_argument("--scope", required=True, choices=(*_common.SCOPES, "agent"))
+    parser.add_argument("--agent", help="Agent name (required for --scope agent).")
     parser.add_argument("--topic", required=True)
     parser.add_argument("--text", required=True)
     parser.add_argument(
@@ -37,6 +38,16 @@ def main(argv=None) -> int:
         sys.stderr.write("aimem: scope '{0}' is not enabled in .aimem/config.json\n".format(args.scope))
         return 2
 
+    if args.scope == "agent":
+        if not args.agent:
+            sys.stderr.write("aimem: --agent is required for --scope agent\n")
+            return 2
+        path = _common.agent_memory_path(config, args.agent)
+        title = "Agent Memory: {0}".format(_common.sanitize_agent(args.agent))
+    else:
+        path = _common.scope_path(config, args.scope)
+        title = _TITLES[args.scope]
+
     compiled = _common.compile_redactions(config)
     text, redacted = _common.redact(args.text.strip(), compiled)
     if redacted:
@@ -47,14 +58,23 @@ def main(argv=None) -> int:
 
     entry = text if args.no_timestamp else "[{0}] {1}".format(_common.now_iso(), text)
 
-    path = _common.scope_path(config, args.scope)
+    topic = args.topic.strip()
     existing = _common.read_text(path)
     if not existing.strip():
-        existing = "# {0}\n\n".format(_TITLES[args.scope])
+        existing = "# {0}\n\n".format(title)
 
-    updated = _common.add_entry(existing, args.topic.strip(), entry)
+    updated = _common.add_entry(existing, topic, entry)
     _common.atomic_write(path, updated)
-    sys.stdout.write("aimem: recorded to {0} under '{1}'.\n".format(path, args.topic.strip()))
+
+    warn_limit = int(config.get("memory", {}).get("warn_entries_per_section", 50))
+    active = _common.count_active_entries(updated, topic)
+    if warn_limit and active > warn_limit:
+        sys.stderr.write(
+            "aimem: section '{0}' now holds {1} active entries (> {2}); consider curating with "
+            "the memory-curator agent or manage_memory.py.\n".format(topic, active, warn_limit)
+        )
+
+    sys.stdout.write("aimem: recorded to {0} under '{1}'.\n".format(path, topic))
     return 0
 
 

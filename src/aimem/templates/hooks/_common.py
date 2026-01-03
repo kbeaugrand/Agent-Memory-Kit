@@ -37,9 +37,13 @@ _DEFAULT_CONFIG = {
         "project": {"enabled": True, "path": ".aimem/memory/project.md"},
         "session": {"enabled": True, "path": ".aimem/memory/session/current.md"},
         "user": {"enabled": False, "path": "~/.aimem/memory/user.md"},
+        "agent": {"enabled": True, "dir": ".aimem/memory/agents", "inject": "none"},
     },
     "memory": {
         "max_entries_per_section": 200,
+        "warn_entries_per_section": 50,
+        "max_injection_chars": 12000,
+        "deprecation_marker": "[DEPRECATED]",
         "redaction_patterns": [
             r"(?i)\b(api[_-]?key|secret|password|passwd|token|client[_-]?secret)\b\s*[:=]\s*\S+",
             r"(?i)\bbearer\s+[A-Za-z0-9._\-]{8,}",
@@ -48,6 +52,8 @@ _DEFAULT_CONFIG = {
     },
 }
 
+# Canonical single-file scopes. Agent-scoped memory is a separate, directory-backed
+# dimension resolved through the ``agent_*`` helpers below.
 SCOPES = ("project", "user", "session")
 
 
@@ -88,7 +94,52 @@ def scope_path(config: dict, scope: str) -> str:
 
 
 def scope_enabled(config: dict, scope: str) -> bool:
+    if scope == "agent":
+        return bool(agent_scope_config(config).get("enabled", True))
     return bool(scope_config(config, scope).get("enabled", False))
+
+
+# --- Agent-scoped memory ----------------------------------------------------------------
+
+
+def agent_scope_config(config: dict) -> dict:
+    value = config.get("scopes", {}).get("agent", {})
+    return value if isinstance(value, dict) else {}
+
+
+def agent_dir(config: dict) -> str:
+    """Return the absolute directory that holds per-agent memory files."""
+    raw = agent_scope_config(config).get("dir", ".aimem/memory/agents")
+    expanded = os.path.expanduser(raw)
+    if not os.path.isabs(expanded):
+        expanded = os.path.join(project_root(), expanded)
+    return os.path.normpath(expanded)
+
+
+def sanitize_agent(name: str) -> str:
+    """Reduce an agent name to a safe file stem (prevents path traversal)."""
+    return re.sub(r"[^A-Za-z0-9_-]+", "-", (name or "").strip()).strip("-")
+
+
+def agent_memory_path(config: dict, name: str) -> str:
+    """Return the absolute path to a single agent's memory file."""
+    stem = sanitize_agent(name)
+    return os.path.normpath(os.path.join(agent_dir(config), stem + ".md"))
+
+
+def list_agent_files(config: dict) -> list:
+    """Return ``(agent_name, path)`` for each agent memory file, excluding README."""
+    directory = agent_dir(config)
+    results = []
+    try:
+        names = sorted(os.listdir(directory))
+    except OSError:
+        return results
+    for entry in names:
+        if not entry.endswith(".md") or entry.lower() == "readme.md":
+            continue
+        results.append((entry[:-3], os.path.join(directory, entry)))
+    return results
 
 
 # --- Redaction --------------------------------------------------------------------------
@@ -211,8 +262,106 @@ def add_entry(markdown: str, topic: str, entry: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def consolidate(markdown: str, max_entries: int, compiled) -> str:
-    """De-duplicate bullets per section, cap section size, redact secrets, tidy blanks."""
+# --- Entry addressing and soft-delete (deprecation) -------------------------------------
+
+DEPRECATION_MARKER = "[DEPRECATED]"
+
+
+def deprecation_marker(config: dict) -> str:
+    marker = config.get("memory", {}).get("deprecation_marker", DEPRECATION_MARKER)
+    return marker if isinstance(marker, str) and marker else DEPRECATION_MARKER
+
+
+def is_deprecated_bullet(line: str, marker: str = DEPRECATION_MARKER) -> bool:
+    stripped = line.strip()
+    if not stripped.startswith("- "):
+        return False
+    return stripped[2:].lstrip().startswith(marker)
+
+
+def strip_deprecated(markdown: str, marker: str = DEPRECATION_MARKER) -> str:
+    """Drop deprecated bullets so they stay on disk but are not injected into context."""
+    kept = [line for line in markdown.split("\n") if not is_deprecated_bullet(line, marker)]
+    return "\n".join(kept)
+
+
+def list_entries(markdown: str) -> list:
+    """Return ``(section, index, deprecated, text)`` per bullet, 1-based within each section."""
+    entries = []
+    section = ""
+    index = 0
+    for line in markdown.split("\n"):
+        if line.startswith("## "):
+            section = line[3:].strip()
+            index = 0
+            continue
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            index += 1
+            entries.append((section, index, is_deprecated_bullet(line), stripped[2:]))
+    return entries
+
+
+def _locate_bullet(lines: list, section: str, index: int):
+    current = ""
+    count = 0
+    for i, line in enumerate(lines):
+        if line.startswith("## "):
+            current = line[3:].strip()
+            count = 0
+            continue
+        if current == section and line.strip().startswith("- "):
+            count += 1
+            if count == index:
+                return i
+    return None
+
+
+def delete_entry(markdown: str, section: str, index: int):
+    """Hard-remove the ``index``-th bullet under ``section``. Returns ``(text, removed)``."""
+    lines = markdown.split("\n")
+    i = _locate_bullet(lines, section, index)
+    if i is None:
+        return markdown, False
+    del lines[i]
+    text = "\n".join(lines)
+    return (text if text.endswith("\n") else text + "\n"), True
+
+
+def set_deprecated(
+    markdown: str, section: str, index: int, deprecated: bool, marker: str = DEPRECATION_MARKER
+):
+    """Toggle the deprecation marker on a bullet. Returns ``(text, changed)``."""
+    lines = markdown.split("\n")
+    i = _locate_bullet(lines, section, index)
+    if i is None:
+        return markdown, False
+    line = lines[i]
+    indent = line[: len(line) - len(line.lstrip())]
+    body = line.strip()[2:]
+    already = body.lstrip().startswith(marker)
+    if deprecated and not already:
+        body = marker + " " + body.lstrip()
+    elif not deprecated and already:
+        body = body.lstrip()[len(marker) :].lstrip()
+    lines[i] = indent + "- " + body
+    text = "\n".join(lines)
+    return (text if text.endswith("\n") else text + "\n"), True
+
+
+def count_active_entries(markdown: str, section: str) -> int:
+    """Count non-deprecated bullets under ``section``."""
+    return sum(
+        1 for sec, _idx, deprecated, _text in list_entries(markdown) if sec == section and not deprecated
+    )
+
+
+def consolidate(markdown: str, max_entries: int, compiled, marker: str = DEPRECATION_MARKER) -> str:
+    """De-duplicate bullets per section, cap active entries, redact secrets, tidy blanks.
+
+    Deprecated (soft-deleted) bullets are always preserved and never count toward the
+    active-entry cap.
+    """
     redacted, _ = redact(markdown, compiled)
     result = []
     seen = set()
@@ -226,10 +375,13 @@ def consolidate(markdown: str, max_entries: int, compiled) -> str:
         stripped = line.strip()
         if stripped.startswith("- "):
             key = " ".join(stripped.split())
-            if key in seen or count >= max_entries:
+            if key in seen:
                 continue
             seen.add(key)
-            count += 1
+            if not is_deprecated_bullet(line, marker):
+                if count >= max_entries:
+                    continue
+                count += 1
         result.append(line)
     text = collapse_blank_lines("\n".join(result))
     if not text.endswith("\n"):

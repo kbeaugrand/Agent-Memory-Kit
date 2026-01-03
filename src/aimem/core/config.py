@@ -22,6 +22,9 @@ DEFAULT_REDACTION_PATTERNS: list[str] = [
 ]
 
 DEFAULT_MAX_ENTRIES_PER_SECTION = 200
+DEFAULT_WARN_ENTRIES_PER_SECTION = 50
+DEFAULT_MAX_INJECTION_CHARS = 12000
+DEFAULT_DEPRECATION_MARKER = "[DEPRECATED]"
 
 
 def build_config(
@@ -45,6 +48,29 @@ def build_config(
     if not isinstance(max_entries, int) or max_entries <= 0:
         max_entries = DEFAULT_MAX_ENTRIES_PER_SECTION
 
+    warn_entries = prior_memory.get("warn_entries_per_section")
+    if not isinstance(warn_entries, int) or warn_entries <= 0:
+        warn_entries = DEFAULT_WARN_ENTRIES_PER_SECTION
+
+    max_injection = prior_memory.get("max_injection_chars")
+    if not isinstance(max_injection, int) or max_injection <= 0:
+        max_injection = DEFAULT_MAX_INJECTION_CHARS
+
+    marker = prior_memory.get("deprecation_marker")
+    if not isinstance(marker, str) or not marker:
+        marker = DEFAULT_DEPRECATION_MARKER
+
+    prior_scopes = prior.get("scopes", {}) if isinstance(prior.get("scopes"), dict) else {}
+    prior_agent = prior_scopes.get("agent", {})
+    if not isinstance(prior_agent, dict):
+        prior_agent = {}
+    agent_enabled = prior_agent.get("enabled", True)
+    if not isinstance(agent_enabled, bool):
+        agent_enabled = True
+    agent_inject = prior_agent.get("inject", "none")
+    if agent_inject not in ("none", "all"):
+        agent_inject = "none"
+
     return {
         "schema_version": CONFIG_SCHEMA_VERSION,
         "aimem_version": aimem_version,
@@ -54,9 +80,17 @@ def build_config(
             "project": {"enabled": True, "path": paths.PROJECT_MEMORY},
             "session": {"enabled": True, "path": paths.SESSION_MEMORY},
             "user": {"enabled": user_scope, "path": paths.USER_MEMORY},
+            "agent": {
+                "enabled": agent_enabled,
+                "dir": paths.AGENTS_MEMORY_DIR,
+                "inject": agent_inject,
+            },
         },
         "memory": {
             "max_entries_per_section": max_entries,
+            "warn_entries_per_section": warn_entries,
+            "max_injection_chars": max_injection,
+            "deprecation_marker": marker,
             "redaction_patterns": redaction,
         },
     }

@@ -44,16 +44,23 @@ def _touched_memory(payload: dict) -> bool:
 
 def consolidate_all(config: dict) -> int:
     max_entries = int(config.get("memory", {}).get("max_entries_per_section", 200))
+    marker = _common.deprecation_marker(config)
     compiled = _common.compile_redactions(config)
     changed = 0
-    for scope in _common.SCOPES:
-        if not _common.scope_enabled(config, scope):
-            continue
-        path = _common.scope_path(config, scope)
+
+    targets = [
+        _common.scope_path(config, scope)
+        for scope in _common.SCOPES
+        if _common.scope_enabled(config, scope)
+    ]
+    if _common.scope_enabled(config, "agent"):
+        targets.extend(path for _name, path in _common.list_agent_files(config))
+
+    for path in targets:
         original = _common.read_text(path)
         if not original:
             continue
-        updated = _common.consolidate(original, max_entries, compiled)
+        updated = _common.consolidate(original, max_entries, compiled, marker)
         if updated != original:
             _common.atomic_write(path, updated)
             changed += 1

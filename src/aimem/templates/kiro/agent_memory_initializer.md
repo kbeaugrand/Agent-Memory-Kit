@@ -30,6 +30,8 @@ initialize memory or when the user approves the exact entries.
   session and should not become permanent project facts.
 - If user preferences are explicitly provided, suggest adding them to `{{USER_MEMORY}}`;
   do not infer personal preferences from repository files.
+- When a fact clearly belongs to one specific agent rather than the whole team, propose it
+  as agent-scoped memory (`record_memory.py --scope agent --agent <name>`).
 - For durable memory outside an explicit initialization request, present a memory
   candidate with scope, action, target, reason, and exact proposed content; require
   explicit approval before writing.
@@ -44,6 +46,7 @@ initialize memory or when the user approves the exact entries.
   - `{{PROJECT_MEMORY}}`
   - `{{SESSION_MEMORY}}`
   - `{{USER_MEMORY}}` when the user explicitly asks for a user-scoped preference
+  - `{{AGENTS_MEMORY_DIR}}/<agent>.md` when seeding memory for a specific agent
 - Do not rewrite source code, project configuration, dependency files, or generated hooks.
 - Keep uncertain findings, temporary plans, work in progress, one-off implementation
   details, and full conversation transcripts out of durable memory.

@@ -14,7 +14,7 @@ repair or update the generated files.
 
 | Layer | Files |
 | --- | --- |
-| Canonical memory | `.aimem/memory/project.md` (committed), `.aimem/memory/session/current.md` (ephemeral), `~/.aimem/memory/user.md` (global) |
+| Canonical memory | `.aimem/memory/project.md` (committed), `.aimem/memory/session/current.md` (ephemeral), `.aimem/memory/agents/<agent>.md` (per-agent, committed), `~/.aimem/memory/user.md` (global) |
 | Project-local hook scripts | `.aimem/hooks/*.py` — self-contained, standard-library-only Python |
 | Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/agents/memory-initializer.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
 | GitHub Copilot | `.github/copilot-instructions.md` (block), `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-initializer.agent.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
@@ -23,19 +23,27 @@ repair or update the generated files.
 ## How memory works after init
 
 - **Read** — a `SessionStart` hook injects your memory into the agent's context
-  automatically (Kiro via stdout, Copilot via `additionalContext`).
+  automatically (Kiro via stdout, Copilot via `additionalContext`). Injected memory is
+  size-capped with a curation reminder when it grows large, and deprecated entries are
+  excluded.
 - **Propose** — steering/instructions tell agents to identify durable memory candidates,
   show the exact proposed entry, explain the scope and reason, and ask before activation.
 - **Write** — after explicit approval, or when you directly ask the agent to record
-  memory, agents persist entries with `record_memory.py`; a `memory-initializer` agent can
-  seed project facts during explicit initialization and a `memory-curator` agent reviews,
-  consolidates, and de-duplicates approved memory.
+  memory, agents persist entries with `record_memory.py` (add `--scope agent --agent <name>`
+  for per-agent memory); a `memory-initializer` agent can seed project facts during
+  explicit initialization and a `memory-curator` agent reviews, consolidates, and
+  de-duplicates approved memory.
+- **Manage** — `manage_memory.py` lists, deletes, deprecates (a reversible soft-delete),
+  or restores individual entries, addressed by scope, section, and 1-based index.
 - **Guard** — a `PreToolUse` hook blocks writing secrets into memory files.
-- **Consolidate** — a post-edit hook normalizes and de-duplicates memory files.
+- **Consolidate** — a post-edit hook normalizes and de-duplicates memory files while
+  preserving deprecated (soft-deleted) entries.
 
 Memory is durable, validated, reusable knowledge. Project memory is committed and shared
 with the team. User memory is personal and stays in your home directory. Session memory is
-temporary scratch space for the current task and is not durable memory.
+temporary scratch space for the current task and is not durable memory. Agent memory holds
+durable facts specific to one agent, committed under `.aimem/memory/agents/` and not
+injected by default (set `AIMEM_ACTIVE_AGENT` or `scopes.agent.inject` to inject it).
 
 Agents must not silently activate durable memory. A candidate should be important to
 future work, likely to remain true, reusable across future interactions, validated by the
