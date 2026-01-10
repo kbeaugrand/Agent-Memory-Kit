@@ -26,6 +26,18 @@ def main(argv=None) -> int:
     parser.add_argument("--agent", help="Agent name (required for --scope agent).")
     parser.add_argument("--topic", required=True)
     parser.add_argument("--text", required=True)
+    parser.add_argument("--kind", choices=_common.MEMORY_RECORD_KINDS, default="fact")
+    parser.add_argument("--status", choices=_common.MEMORY_RECORD_STATUSES, default="active")
+    parser.add_argument("--source", default="manual")
+    parser.add_argument("--confidence", type=float, default=0.8)
+    parser.add_argument("--valid-from")
+    parser.add_argument("--valid-until")
+    parser.add_argument(
+        "--relationship",
+        action="append",
+        default=[],
+        help="Relationship as TYPE:ID; may be supplied multiple times.",
+    )
     parser.add_argument(
         "--no-timestamp",
         action="store_true",
@@ -56,7 +68,31 @@ def main(argv=None) -> int:
         sys.stderr.write("aimem: refusing to record an empty entry.\n")
         return 2
 
-    entry = text if args.no_timestamp else "[{0}] {1}".format(_common.now_iso(), text)
+    relationships = []
+    for raw in args.relationship:
+        if ":" not in raw:
+            sys.stderr.write("aimem: --relationship must use TYPE:ID format\n")
+            return 2
+        rel_type, rel_id = raw.split(":", 1)
+        relationships.append({"type": rel_type.strip(), "id": rel_id.strip()})
+
+    try:
+        record = _common.make_record(
+            args.scope,
+            args.kind,
+            args.status,
+            args.source.strip(),
+            args.confidence,
+            args.valid_from,
+            args.valid_until,
+            relationships,
+        )
+    except ValueError as exc:
+        sys.stderr.write("aimem: invalid memory record: {0}\n".format(exc))
+        return 2
+
+    entry_text = text if args.no_timestamp else "[{0}] {1}".format(record["created_at"], text)
+    entry = _common.attach_record(entry_text, record)
 
     topic = args.topic.strip()
     existing = _common.read_text(path)

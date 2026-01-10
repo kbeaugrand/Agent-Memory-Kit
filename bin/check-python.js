@@ -3,7 +3,7 @@
 
 const { spawnSync } = require('child_process');
 
-const MIN_PY = 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 9) else 1)';
+const MIN_PY = 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 10) else 1)';
 
 function hasPython() {
   const candidates =
@@ -34,7 +34,7 @@ function hasPython() {
 
 if (!hasPython()) {
   process.stderr.write(
-    'aimem: Python 3.9+ is required to install this package.\n' +
+    'aimem: Python 3.10+ is required to install this package.\n' +
       'Install Python from https://www.python.org/downloads/ and try again.\n'
   );
   process.exit(1);

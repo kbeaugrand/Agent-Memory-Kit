@@ -18,6 +18,11 @@ Only after explicit approval, or when the user directly asks you to record memor
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<concise fact>"
 ```
 
+Memory bullets include embedded versioned `aimem:record` metadata for provenance,
+lifecycle status, confidence, validity, and relationships. Query it with
+`manage_memory.py list --format json`; convert legacy bullets with
+`manage_memory.py migrate --scope <scope>`.
+
 Never store secrets, tokens, passwords, personal data, temporary plans, unvalidated
 assumptions, one-off implementation details, or full conversation transcripts in memory.
 Keep it concise and safe to commit. Rerun `aimem init` to repair or update this

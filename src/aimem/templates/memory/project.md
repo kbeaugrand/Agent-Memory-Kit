@@ -14,6 +14,13 @@ conversation transcripts, or ephemeral task notes (use session memory for those)
 Preferred way to add an entry:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Commands" --text "..."
 
+Entries remain readable Markdown bullets and include an embedded `aimem:record` metadata
+comment with schema_version, id, scope, kind, status, source, confidence, validity, and
+relationships. Use `--kind`, `--source`, `--confidence`, `--valid-from`, `--valid-until`,
+and `--relationship TYPE:ID` on record_memory.py when provenance or lifecycle details
+matter. Convert older plain bullets with:
+  {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope project
+
 Review or curate entries (list, deprecate, restore, delete) with:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project
 

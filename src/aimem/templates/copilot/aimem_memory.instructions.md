@@ -85,6 +85,12 @@ recording script:
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<concise fact>"
 ```
 
+New entries are versioned structured records embedded inside readable Markdown bullets.
+The current schema stores `schema_version`, `id`, `scope`, `kind`, `status`, `source`,
+`confidence`, `validity`, and `relationships`. Use `--kind`, `--source`, `--confidence`,
+`--valid-from`, `--valid-until`, and `--relationship TYPE:ID` when provenance, validity,
+or relationships matter.
+
 Never edit generated assistant projection files directly. Change canonical memory files
 through an approved memory action or the generated scripts.
 
@@ -95,15 +101,18 @@ them with the management script instead of hand-editing:
 
 ```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project --kind command --source README.md --format json
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py deprecate --scope project --section Gotchas --index 2
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py restore --scope project --section Gotchas --index 2
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py delete --scope project --match "outdated note"
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope project
 ```
 
 Prefer **deprecate** (a reversible soft-delete) over **delete**: a deprecated entry stays
 on disk but is excluded from injected context, so history is preserved and mistakes are
-recoverable. Hard-delete only after review. Record agent-specific facts with
-`record_memory.py --scope agent --agent <name>`.
+recoverable. Hard-delete only after review. Use **migrate** to convert legacy plain
+Markdown bullets into structured records without changing their visible text. Record
+agent-specific facts with `record_memory.py --scope agent --agent <name>`.
 
 ## Security
 

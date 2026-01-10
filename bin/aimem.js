@@ -15,10 +15,10 @@ const path = require('path');
 const packageRoot = path.resolve(__dirname, '..');
 const srcDir = path.join(packageRoot, 'src');
 
-const MIN_PY = 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 9) else 1)';
+const MIN_PY = 'import sys; sys.exit(0 if sys.version_info[:2] >= (3, 10) else 1)';
 
 /**
- * Return { cmd, prefixArgs } for a working Python >= 3.9, or null if none found.
+ * Return { cmd, prefixArgs } for a working Python >= 3.10, or null if none found.
  */
 function findPython() {
   const candidates =
@@ -54,7 +54,7 @@ function main() {
   const python = findPython();
   if (!python) {
     process.stderr.write(
-      'aimem: could not find a Python 3.9+ interpreter on PATH.\n' +
+      'aimem: could not find a Python 3.10+ interpreter on PATH.\n' +
         'Install Python from https://www.python.org/downloads/ and try again.\n'
     );
     process.exit(1);

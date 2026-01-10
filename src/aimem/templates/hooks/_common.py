@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import uuid
 from datetime import datetime, timezone
 
 # --- Location helpers -------------------------------------------------------------------
@@ -55,6 +56,14 @@ _DEFAULT_CONFIG = {
 # Canonical single-file scopes. Agent-scoped memory is a separate, directory-backed
 # dimension resolved through the ``agent_*`` helpers below.
 SCOPES = ("project", "user", "session")
+
+# Structured memory records are embedded at the end of Markdown bullets as HTML comments.
+# The visible bullet remains plain Markdown for older agents and editors, while newer tools
+# can parse, validate, filter, and migrate durable metadata.
+MEMORY_SCHEMA_VERSION = 1
+MEMORY_RECORD_STATUSES = ("active", "deprecated", "superseded", "invalid")
+MEMORY_RECORD_KINDS = ("fact", "command", "convention", "decision", "gotcha", "glossary", "note")
+_RECORD_PREFIX = "aimem:record"
 
 
 def load_config() -> dict:
@@ -224,6 +233,159 @@ def has_content(markdown: str) -> bool:
     return False
 
 
+# --- Structured memory schema -----------------------------------------------------------
+
+
+def new_record_id() -> str:
+    return "mem_" + uuid.uuid4().hex[:16]
+
+
+def migration_record_id(scope: str, section: str, text: str) -> str:
+    import hashlib
+
+    digest = hashlib.sha1((scope + "\0" + section + "\0" + text).encode("utf-8")).hexdigest()
+    return "mem_" + digest[:16]
+
+
+def _record_comment(record: dict) -> str:
+    payload = json.dumps(record, sort_keys=True, separators=(",", ":"))
+    return "<!-- {0} {1} -->".format(_RECORD_PREFIX, payload)
+
+
+def _split_record_comment(body: str):
+    marker = "<!-- " + _RECORD_PREFIX + " "
+    end = " -->"
+    if marker not in body or not body.rstrip().endswith(end):
+        return body.rstrip(), None
+    start = body.rfind(marker)
+    raw = body[start + len(marker) : body.rfind(end)]
+    try:
+        record = json.loads(raw)
+    except ValueError:
+        return body.rstrip(), None
+    if not isinstance(record, dict):
+        return body.rstrip(), None
+    return body[:start].rstrip(), record
+
+
+def visible_entry_text(body: str) -> str:
+    text, _record = _split_record_comment(body)
+    return text.rstrip()
+
+
+def validate_record(record: dict) -> "tuple[bool, str]":
+    required = ("schema_version", "id", "scope", "kind", "status", "source", "confidence", "validity", "relationships")
+    for key in required:
+        if key not in record:
+            return False, "missing '{0}'".format(key)
+    if record.get("schema_version") != MEMORY_SCHEMA_VERSION:
+        return False, "unsupported schema_version '{0}'".format(record.get("schema_version"))
+    if not isinstance(record.get("id"), str) or not record.get("id"):
+        return False, "id must be a non-empty string"
+    if record.get("scope") not in (*SCOPES, "agent"):
+        return False, "scope must be one of project, user, session, agent"
+    if record.get("kind") not in MEMORY_RECORD_KINDS:
+        return False, "kind must be one of {0}".format(", ".join(MEMORY_RECORD_KINDS))
+    if record.get("status") not in MEMORY_RECORD_STATUSES:
+        return False, "status must be one of {0}".format(", ".join(MEMORY_RECORD_STATUSES))
+    if not isinstance(record.get("source"), str) or not record.get("source"):
+        return False, "source must be a non-empty string"
+    confidence = record.get("confidence")
+    if not isinstance(confidence, (int, float)) or confidence < 0 or confidence > 1:
+        return False, "confidence must be a number from 0 to 1"
+    validity = record.get("validity")
+    if not isinstance(validity, dict):
+        return False, "validity must be an object"
+    if not isinstance(validity.get("from"), str) or not validity.get("from"):
+        return False, "validity.from must be a non-empty string"
+    until = validity.get("until")
+    if until is not None and not isinstance(until, str):
+        return False, "validity.until must be a string or null"
+    if not isinstance(record.get("relationships"), list):
+        return False, "relationships must be a list"
+    for relation in record.get("relationships"):
+        if not isinstance(relation, dict):
+            return False, "relationships must contain objects"
+        if not isinstance(relation.get("type"), str) or not isinstance(relation.get("id"), str):
+            return False, "relationships require string type and id"
+    return True, ""
+
+
+def make_record(
+    scope: str,
+    kind: str,
+    status: str,
+    source: str,
+    confidence: float,
+    valid_from: str,
+    valid_until,
+    relationships: list,
+    record_id: str = None,
+) -> dict:
+    now = now_iso()
+    record = {
+        "schema_version": MEMORY_SCHEMA_VERSION,
+        "id": record_id or new_record_id(),
+        "scope": scope,
+        "kind": kind,
+        "status": status,
+        "source": source,
+        "confidence": confidence,
+        "validity": {"from": valid_from or now, "until": valid_until},
+        "relationships": relationships,
+        "created_at": now,
+        "updated_at": now,
+    }
+    ok, reason = validate_record(record)
+    if not ok:
+        raise ValueError(reason)
+    return record
+
+
+def attach_record(body: str, record: dict) -> str:
+    ok, reason = validate_record(record)
+    if not ok:
+        raise ValueError(reason)
+    text, _old = _split_record_comment(body)
+    return text.rstrip() + " " + _record_comment(record)
+
+
+def parsed_entries(markdown: str, default_scope: str = "") -> list:
+    """Return dictionaries for Markdown bullets, including structured metadata if present."""
+    entries = []
+    section = ""
+    index = 0
+    for line in markdown.split("\n"):
+        if line.startswith("## "):
+            section = line[3:].strip()
+            index = 0
+            continue
+        stripped = line.strip()
+        if not stripped.startswith("- "):
+            continue
+        index += 1
+        body = stripped[2:]
+        visible, record = _split_record_comment(body)
+        deprecated = is_deprecated_bullet(line)
+        if isinstance(record, dict):
+            ok, _reason = validate_record(record)
+            if not ok:
+                record = None
+            elif record.get("status") == "deprecated":
+                deprecated = True
+        entries.append(
+            {
+                "section": section,
+                "index": index,
+                "deprecated": deprecated,
+                "text": visible,
+                "record": record,
+                "scope": record.get("scope") if isinstance(record, dict) else default_scope,
+            }
+        )
+    return entries
+
+
 def add_entry(markdown: str, topic: str, entry: str) -> str:
     """Append ``- entry`` under the ``## topic`` heading, creating it if needed.
 
@@ -251,8 +413,10 @@ def add_entry(markdown: str, topic: str, entry: str) -> str:
             section_end = index
             break
 
+    target = visible_entry_text(entry)
     for line in lines[heading_index + 1 : section_end]:
-        if line.strip() == bullet:
+        stripped = line.strip()
+        if stripped.startswith("- ") and visible_entry_text(stripped[2:]) == target:
             return markdown if markdown.endswith("\n") else markdown + "\n"
 
     insert_at = section_end
@@ -276,7 +440,11 @@ def is_deprecated_bullet(line: str, marker: str = DEPRECATION_MARKER) -> bool:
     stripped = line.strip()
     if not stripped.startswith("- "):
         return False
-    return stripped[2:].lstrip().startswith(marker)
+    body = stripped[2:]
+    if body.lstrip().startswith(marker):
+        return True
+    _visible, record = _split_record_comment(body)
+    return isinstance(record, dict) and record.get("status") == "deprecated"
 
 
 def strip_deprecated(markdown: str, marker: str = DEPRECATION_MARKER) -> str:
@@ -287,19 +455,10 @@ def strip_deprecated(markdown: str, marker: str = DEPRECATION_MARKER) -> str:
 
 def list_entries(markdown: str) -> list:
     """Return ``(section, index, deprecated, text)`` per bullet, 1-based within each section."""
-    entries = []
-    section = ""
-    index = 0
-    for line in markdown.split("\n"):
-        if line.startswith("## "):
-            section = line[3:].strip()
-            index = 0
-            continue
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            index += 1
-            entries.append((section, index, is_deprecated_bullet(line), stripped[2:]))
-    return entries
+    return [
+        (entry["section"], entry["index"], entry["deprecated"], entry["text"])
+        for entry in parsed_entries(markdown)
+    ]
 
 
 def _locate_bullet(lines: list, section: str, index: int):
@@ -339,11 +498,14 @@ def set_deprecated(
     line = lines[i]
     indent = line[: len(line) - len(line.lstrip())]
     body = line.strip()[2:]
-    already = body.lstrip().startswith(marker)
-    if deprecated and not already:
-        body = marker + " " + body.lstrip()
-    elif not deprecated and already:
-        body = body.lstrip()[len(marker) :].lstrip()
+    visible, record = _split_record_comment(body)
+    already = visible.lstrip().startswith(marker)
+    clean_visible = visible.lstrip()[len(marker) :].lstrip() if already else visible
+    body = marker + " " + clean_visible.lstrip() if deprecated else clean_visible
+    if isinstance(record, dict):
+        record["status"] = "deprecated" if deprecated else "active"
+        record["updated_at"] = now_iso()
+        body = attach_record(body, record)
     lines[i] = indent + "- " + body
     text = "\n".join(lines)
     return (text if text.endswith("\n") else text + "\n"), True
@@ -374,7 +536,7 @@ def consolidate(markdown: str, max_entries: int, compiled, marker: str = DEPRECA
             continue
         stripped = line.strip()
         if stripped.startswith("- "):
-            key = " ".join(stripped.split())
+            key = " ".join(visible_entry_text(stripped[2:]).split())
             if key in seen:
                 continue
             seen.add(key)

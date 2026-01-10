@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""List, delete, deprecate, or restore individual AI memory entries.
+"""List, delete, deprecate, restore, or migrate individual AI memory entries.
 
 Entries are addressed by (scope, section, index), where ``index`` is the 1-based position
 of a bullet within its ``## Section``. Deprecation is a reversible soft-delete: the entry
@@ -13,6 +13,7 @@ Examples:
   python3 manage_memory.py deprecate --scope project --section Gotchas --index 1
   python3 manage_memory.py restore --scope project --section Gotchas --index 1
   python3 manage_memory.py list --scope agent --agent Dev
+    python3 manage_memory.py migrate --scope project
 
 This script depends only on the standard library.
 """
@@ -20,6 +21,7 @@ This script depends only on the standard library.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 
@@ -68,22 +70,54 @@ def _rel(path: str) -> str:
 def _cmd_list(config: dict, args) -> int:
     marker = _common.deprecation_marker(config)
     any_rows = False
+    rows = []
     for label, path in _iter_targets(config, args.scope, args.agent):
-        entries = _common.list_entries(_common.read_text(path))
+        scope = label.split(":", 1)[0]
+        entries = _common.parsed_entries(_common.read_text(path), scope)
         if args.section:
-            entries = [item for item in entries if item[0] == args.section]
+            entries = [item for item in entries if item["section"] == args.section]
+        if args.id:
+            entries = [item for item in entries if item["record"] and item["record"].get("id") == args.id]
+        if args.kind:
+            entries = [item for item in entries if item["record"] and item["record"].get("kind") == args.kind]
+        if args.status:
+            entries = [item for item in entries if item["record"] and item["record"].get("status") == args.status]
+        if args.source:
+            entries = [item for item in entries if item["record"] and item["record"].get("source") == args.source]
         if not entries:
             continue
         any_rows = True
+        for entry in entries:
+            row = dict(entry)
+            row["target"] = label
+            row["path"] = _rel(path)
+            rows.append(row)
+        if args.format == "json":
+            continue
         sys.stdout.write("# {0} ({1})\n".format(label, _rel(path)))
         current = None
-        for section, index, deprecated, body in entries:
+        for entry in entries:
+            section, index, deprecated, body = (
+                entry["section"],
+                entry["index"],
+                entry["deprecated"],
+                entry["text"],
+            )
             if section != current:
                 sys.stdout.write("## {0}\n".format(section))
                 current = section
             flag = " {0}".format(marker) if deprecated else ""
-            sys.stdout.write("  [{0}]{1} {2}\n".format(index, flag, body))
+            record = entry["record"] or {}
+            meta = ""
+            if record:
+                meta = " id={0} kind={1} status={2} source={3}".format(
+                    record.get("id"), record.get("kind"), record.get("status"), record.get("source")
+                )
+            sys.stdout.write("  [{0}]{1}{2} {3}\n".format(index, flag, meta, body))
         sys.stdout.write("\n")
+    if args.format == "json":
+        sys.stdout.write(json.dumps(rows, sort_keys=True) + "\n")
+        return 0
     if not any_rows:
         sys.stdout.write("aimem: no matching memory entries.\n")
     return 0
@@ -132,6 +166,70 @@ def _cmd_mutate(config: dict, args, action: str) -> int:
     return 0
 
 
+def _migrate_text(markdown: str, scope: str, source: str) -> "tuple[str, int]":
+    lines = markdown.split("\n")
+    section = ""
+    changed = 0
+    for index, line in enumerate(lines):
+        if line.startswith("## "):
+            section = line[3:].strip()
+            continue
+        stripped = line.strip()
+        if not stripped.startswith("- "):
+            continue
+        indent = line[: len(line) - len(line.lstrip())]
+        body = stripped[2:]
+        visible, record = _common._split_record_comment(body)
+        if record:
+            continue
+        status = "deprecated" if visible.lstrip().startswith(_common.deprecation_marker({})) else "active"
+        clean = visible
+        if status == "deprecated":
+            clean = clean.lstrip()[len(_common.DEPRECATION_MARKER) :].lstrip()
+        try:
+            record = _common.make_record(
+                scope,
+                "fact",
+                status,
+                source,
+                0.5,
+                _common.now_iso(),
+                None,
+                [],
+                _common.migration_record_id(scope, section, clean),
+            )
+        except ValueError:
+            continue
+        lines[index] = indent + "- " + _common.attach_record(visible, record)
+        changed += 1
+    text = "\n".join(lines)
+    return (text if text.endswith("\n") else text + "\n"), changed
+
+
+def _cmd_migrate(config: dict, args) -> int:
+    changed_files = 0
+    changed_entries = 0
+    for label, path in _iter_targets(config, args.scope, args.agent):
+        text = _common.read_text(path)
+        if not text.strip():
+            continue
+        scope = label.split(":", 1)[0]
+        updated, count = _migrate_text(text, scope, args.source)
+        if count:
+            changed_entries += count
+            changed_files += 1
+            if not args.dry_run:
+                _common.atomic_write(path, updated)
+            sys.stdout.write("aimem: migrated {0} entries in {1}\n".format(count, _rel(path)))
+    if not changed_entries:
+        sys.stdout.write("aimem: no legacy memory entries found.\n")
+    elif args.dry_run:
+        sys.stdout.write("aimem: dry run; no files changed.\n")
+    else:
+        sys.stdout.write("aimem: migrated {0} entries across {1} files.\n".format(changed_entries, changed_files))
+    return 0
+
+
 def _add_target_args(sub: argparse.ArgumentParser) -> None:
     sub.add_argument("--scope", choices=_CHOICES, required=True)
     sub.add_argument("--agent", help="Agent name (required for --scope agent).")
@@ -147,6 +245,11 @@ def main(argv=None) -> int:
     p_list.add_argument("--scope", choices=_CHOICES)
     p_list.add_argument("--agent")
     p_list.add_argument("--section")
+    p_list.add_argument("--id")
+    p_list.add_argument("--kind", choices=_common.MEMORY_RECORD_KINDS)
+    p_list.add_argument("--status", choices=_common.MEMORY_RECORD_STATUSES)
+    p_list.add_argument("--source")
+    p_list.add_argument("--format", choices=("text", "json"), default="text")
 
     p_delete = subparsers.add_parser("delete", help="Permanently remove an entry.")
     _add_target_args(p_delete)
@@ -158,6 +261,12 @@ def main(argv=None) -> int:
     p_restore = subparsers.add_parser("restore", help="Un-deprecate a previously marked entry.")
     _add_target_args(p_restore)
 
+    p_migrate = subparsers.add_parser("migrate", help="Add structured metadata to legacy Markdown bullets.")
+    p_migrate.add_argument("--scope", choices=_CHOICES)
+    p_migrate.add_argument("--agent")
+    p_migrate.add_argument("--source", default="migration")
+    p_migrate.add_argument("--dry-run", action="store_true")
+
     args = parser.parse_args(argv)
     config = _common.load_config()
 
@@ -165,6 +274,8 @@ def main(argv=None) -> int:
         return _cmd_list(config, args)
     if args.command in ("delete", "deprecate", "restore"):
         return _cmd_mutate(config, args, args.command)
+    if args.command == "migrate":
+        return _cmd_migrate(config, args)
     parser.print_help()
     return 1
 

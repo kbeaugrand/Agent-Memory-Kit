@@ -5,7 +5,8 @@ specific agent rather than the whole project. This mirrors coday's agent-scoped 
 (`memory list --project --agent=Dev`).
 
 - One file per agent: `<agent-name>.md` (for example `Dev.md`, `Reviewer.md`).
-- Same structure as project memory: `## Section` headings with `- ` bullet entries.
+- Same structure as project memory: `## Section` headings with readable `- ` bullet
+	entries plus embedded `aimem:record` metadata.
 - Committed with the project so the whole team shares each agent's memory.
 - This `README.md` is documentation only and is never injected into context.
 
@@ -15,11 +16,17 @@ specific agent rather than the whole project. This mirrors coday's agent-scoped 
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope agent --agent Dev --topic "Conventions" --text "..."
 ```
 
+Use `--kind`, `--source`, `--confidence`, `--valid-from`, `--valid-until`, and
+`--relationship TYPE:ID` to store provenance, confidence, validity windows, and
+relationships.
+
 ## Listing / curating agent memory
 
 ```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope agent --agent Dev
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope agent --agent Dev --kind convention --format json
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py deprecate --scope agent --agent Dev --section Conventions --index 1
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope agent --agent Dev
 ```
 
 ## Injection

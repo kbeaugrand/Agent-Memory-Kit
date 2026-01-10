@@ -130,6 +130,78 @@ def test_record_deduplicates(make_project, run_hook) -> None:
     assert text.count("- Same note") == 1
 
 
+def test_record_writes_structured_schema_and_list_queries(make_project, run_hook) -> None:
+    root = make_project("--both")
+    result = run_hook(
+        root,
+        "record_memory.py",
+        "--scope",
+        "project",
+        "--topic",
+        "Commands",
+        "--text",
+        "Use pytest for tests",
+        "--kind",
+        "command",
+        "--source",
+        "README.md",
+        "--confidence",
+        "0.9",
+        "--valid-from",
+        "2026-07-12T00:00:00Z",
+        "--relationship",
+        "supersedes:mem_old",
+        "--no-timestamp",
+    )
+    assert result.returncode == 0
+
+    raw = (root / ".aimem/memory/project.md").read_text(encoding="utf-8")
+    assert "<!-- aimem:record" in raw
+
+    listing = run_hook(
+        root,
+        "manage_memory.py",
+        "list",
+        "--scope",
+        "project",
+        "--kind",
+        "command",
+        "--source",
+        "README.md",
+        "--format",
+        "json",
+    )
+    rows = json.loads(listing.stdout)
+    assert len(rows) == 1
+    record = rows[0]["record"]
+    assert record["schema_version"] == 1
+    assert record["scope"] == "project"
+    assert record["kind"] == "command"
+    assert record["status"] == "active"
+    assert record["source"] == "README.md"
+    assert record["confidence"] == 0.9
+    assert record["validity"] == {"from": "2026-07-12T00:00:00Z", "until": None}
+    assert record["relationships"] == [{"type": "supersedes", "id": "mem_old"}]
+
+
+def test_record_rejects_invalid_schema_values(make_project, run_hook) -> None:
+    root = make_project("--both")
+    result = run_hook(
+        root,
+        "record_memory.py",
+        "--scope",
+        "project",
+        "--topic",
+        "Commands",
+        "--text",
+        "Bad confidence",
+        "--confidence",
+        "2",
+    )
+    assert result.returncode == 2
+    assert "invalid memory record" in result.stderr
+
+
 def test_consolidate_deduplicates(make_project, run_hook) -> None:
     root = make_project("--both")
     project_memory = root / ".aimem/memory/project.md"
@@ -139,6 +211,38 @@ def test_consolidate_deduplicates(make_project, run_hook) -> None:
     text = project_memory.read_text(encoding="utf-8")
     assert text.count("- a") == 1
     assert "- b" in text
+
+
+def test_manage_migrate_converts_legacy_markdown(make_project, run_hook) -> None:
+    root = make_project("--both")
+    project_memory = root / ".aimem/memory/project.md"
+    project_memory.write_text(
+        "# Project Memory\n\n## Commands\n- legacy command\n- [DEPRECATED] old command\n",
+        encoding="utf-8",
+    )
+
+    result = run_hook(root, "manage_memory.py", "migrate", "--scope", "project")
+    assert result.returncode == 0
+    text = project_memory.read_text(encoding="utf-8")
+    assert text.count("<!-- aimem:record") == 2
+    assert "legacy command" in text
+    assert "[DEPRECATED] old command" in text
+
+    listing = run_hook(
+        root,
+        "manage_memory.py",
+        "list",
+        "--scope",
+        "project",
+        "--status",
+        "deprecated",
+        "--format",
+        "json",
+    )
+    rows = json.loads(listing.stdout)
+    assert len(rows) == 1
+    assert rows[0]["record"]["source"] == "migration"
+    assert rows[0]["record"]["status"] == "deprecated"
 
 
 def _record(run_hook, root, *pairs: str):
