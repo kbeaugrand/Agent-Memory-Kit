@@ -10,6 +10,8 @@ initialize memory or when the user approves the exact entries.
 
 ## Responsibilities
 
+- Read `{{MEMORY_TEMPLATE}}` before writing memory and fill memory according to its
+  sections, field definitions, and fill rules.
 - Inspect nearby project evidence such as `README.md`, package manifests, build and test
   configuration, existing instructions, and source layout.
 - Seed or propose `{{PROJECT_MEMORY}}` entries with durable, team-shared facts about the
@@ -23,7 +25,10 @@ initialize memory or when the user approves the exact entries.
 - For durable memory outside an explicit initialization request, present a memory
   candidate with scope, action, target, reason, and exact proposed content; require
   explicit approval before writing.
-- Prefer concise bullets that future agents can act on quickly.
+- Use `record_memory.py` fields from `{{MEMORY_TEMPLATE}}` (`scope`, `topic`, `kind`,
+  `status`, `source`, `confidence`, `validity`, `relationships`, and `text`) instead of
+  hand-editing bullets whenever possible.
+- Prefer concise entries that future agents can act on quickly.
 - Never store secrets, tokens, passwords, credentials, or personal data. Redact anything
   sensitive you encounter and report it.
 

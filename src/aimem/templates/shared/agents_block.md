@@ -21,7 +21,8 @@ Only after explicit approval, or when the user directly asks you to record memor
 Memory bullets include embedded versioned `aimem:record` metadata for provenance,
 lifecycle status, confidence, validity, and relationships. Query it with
 `manage_memory.py list --format json`; convert legacy bullets with
-`manage_memory.py migrate --scope <scope>`.
+`manage_memory.py migrate --scope <scope>`. When initializing memory, read
+`{{MEMORY_TEMPLATE}}` and fill memory according to that template.
 
 Never store secrets, tokens, passwords, personal data, temporary plans, unvalidated
 assumptions, one-off implementation details, or full conversation transcripts in memory.

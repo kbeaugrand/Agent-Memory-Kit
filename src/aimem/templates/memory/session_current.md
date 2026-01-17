@@ -12,7 +12,8 @@ full conversation transcripts here. This header comment is stripped before injec
 
 Entries are readable Markdown bullets with embedded `aimem:record` metadata for schema
 version, id, scope, kind, status, source, confidence, validity, and relationships. Prefer
-the generated record/manage scripts so metadata stays valid. Convert older bullets with:
+the generated record/manage scripts and the template in {{MEMORY_TEMPLATE}} so metadata
+stays valid. Convert older bullets with:
 	{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope session
 -->
 

@@ -188,6 +188,7 @@ def _variables(python_command: str) -> dict[str, str]:
     return {
         "AIMEM_VERSION": __version__,
         "PYTHON_COMMAND": python_command,
+        "MEMORY_TEMPLATE": paths.MEMORY_TEMPLATE,
         "PROJECT_MEMORY": paths.PROJECT_MEMORY,
         "SESSION_MEMORY": paths.SESSION_MEMORY,
         "USER_MEMORY": paths.USER_MEMORY,
@@ -226,6 +227,7 @@ def _build_plan(
         ),
         project(paths.HOOK_GUARD, WriteMode.MANAGED, _render("hooks/guard_memory.py", variables)),
         project(paths.HOOK_MANAGE, WriteMode.MANAGED, _render("hooks/manage_memory.py", variables)),
+        project(paths.MEMORY_TEMPLATE, WriteMode.SEED, _render("memory/TEMPLATE.md", variables)),
         project(paths.PROJECT_MEMORY, WriteMode.SEED, _render("memory/project.md", variables)),
         project(
             paths.SESSION_MEMORY, WriteMode.SEED, _render("memory/session_current.md", variables)

@@ -105,6 +105,30 @@ def test_memory_agents_require_approval_before_durable_writes(tmp_path: Path) ->
         assert "Never store secrets" in text
 
 
+def test_memory_template_installed_and_used_by_initializer_agents(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    template = (root / ".aimem/memory/TEMPLATE.md").read_text(encoding="utf-8")
+    assert "# Memory Template" in template
+    assert "## Entry Fields" in template
+    assert "## Project Memory Sections" in template
+    assert "record_memory.py" in template
+    assert "--kind" in template
+    assert "--source" in template
+    assert "--confidence" in template
+    assert "relationships" in template
+
+    for path in (
+        root / ".github/agents/memory-initializer.agent.md",
+        root / ".kiro/agents/memory-initializer.md",
+        root / ".github/instructions/aimem-memory.instructions.md",
+        root / ".kiro/steering/aimem-memory.md",
+    ):
+        text = path.read_text(encoding="utf-8")
+        assert ".aimem/memory/TEMPLATE.md" in text
+        assert "fill" in text
+        assert "memory according" in text
+
+
 def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) -> None:
     home = tmp_path / "home"
     home.mkdir()

@@ -14,6 +14,9 @@ conversation transcripts, or ephemeral task notes (use session memory for those)
 Preferred way to add an entry:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Commands" --text "..."
 
+Before initializing or filling project memory, read {{MEMORY_TEMPLATE}} and use its
+section guide and entry fields.
+
 Entries remain readable Markdown bullets and include an embedded `aimem:record` metadata
 comment with schema_version, id, scope, kind, status, source, confidence, validity, and
 relationships. Use `--kind`, `--source`, `--confidence`, `--valid-from`, `--valid-until`,

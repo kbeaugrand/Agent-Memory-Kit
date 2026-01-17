@@ -16,6 +16,7 @@ EXPECTED = [
     ".aimem/hooks/consolidate_memory.py",
     ".aimem/hooks/guard_memory.py",
     ".aimem/hooks/manage_memory.py",
+    ".aimem/memory/TEMPLATE.md",
     ".aimem/memory/project.md",
     ".aimem/memory/session/current.md",
     ".aimem/memory/agents/README.md",

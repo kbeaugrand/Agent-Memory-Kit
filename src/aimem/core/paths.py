@@ -13,6 +13,7 @@ MANIFEST_FILE = ".aimem/manifest.json"
 BACKUPS_DIR = ".aimem/backups"
 
 # Canonical memory files.
+MEMORY_TEMPLATE = ".aimem/memory/TEMPLATE.md"
 PROJECT_MEMORY = ".aimem/memory/project.md"
 SESSION_MEMORY_DIR = ".aimem/memory/session"
 SESSION_MEMORY = ".aimem/memory/session/current.md"

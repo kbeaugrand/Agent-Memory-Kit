@@ -91,6 +91,9 @@ The current schema stores `schema_version`, `id`, `scope`, `kind`, `status`, `so
 `--valid-from`, `--valid-until`, and `--relationship TYPE:ID` when provenance, validity,
 or relationships matter.
 
+When initializing memory, read the installed template at `{{MEMORY_TEMPLATE}}` and fill
+memory according to its section guide and field definitions.
+
 Never edit generated assistant projection files directly. Change canonical memory files
 through an approved memory action or the generated scripts.
 
