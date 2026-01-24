@@ -86,6 +86,7 @@ def build_config(
                 "inject": agent_inject,
             },
         },
+        "index": {"dir": paths.INDEX_DIR},
         "memory": {
             "max_entries_per_section": max_entries,
             "warn_entries_per_section": warn_entries,

@@ -49,14 +49,14 @@ def consolidate_all(config: dict) -> int:
     changed = 0
 
     targets = [
-        _common.scope_path(config, scope)
+        (scope, _common.scope_path(config, scope))
         for scope in _common.SCOPES
         if _common.scope_enabled(config, scope)
     ]
     if _common.scope_enabled(config, "agent"):
-        targets.extend(path for _name, path in _common.list_agent_files(config))
+        targets.extend(("agent", path) for _name, path in _common.list_agent_files(config))
 
-    for path in targets:
+    for scope, path in targets:
         original = _common.read_text(path)
         if not original:
             continue
@@ -64,6 +64,14 @@ def consolidate_all(config: dict) -> int:
         if updated != original:
             _common.atomic_write(path, updated)
             changed += 1
+        if scope != "agent":
+            records = _common.index_record_map(config, scope)
+            live_ids = {
+                entry["id"]
+                for entry in _common.parsed_entries(updated, scope, records)
+                if entry.get("id")
+            }
+            _common.prune_index_records(config, scope, live_ids)
     return changed
 
 

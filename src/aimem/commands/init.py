@@ -227,6 +227,7 @@ def _build_plan(
         ),
         project(paths.HOOK_GUARD, WriteMode.MANAGED, _render("hooks/guard_memory.py", variables)),
         project(paths.HOOK_MANAGE, WriteMode.MANAGED, _render("hooks/manage_memory.py", variables)),
+        project(paths.PROJECT_INDEX, WriteMode.SEED, _render("index/project.json", variables)),
         project(paths.MEMORY_TEMPLATE, WriteMode.SEED, _render("memory/TEMPLATE.md", variables)),
         project(paths.PROJECT_MEMORY, WriteMode.SEED, _render("memory/project.md", variables)),
         project(

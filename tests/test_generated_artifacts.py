@@ -113,6 +113,9 @@ def test_memory_template_installed_and_used_by_initializer_agents(tmp_path: Path
     assert "## Project Memory Sections" in template
     assert "record_memory.py" in template
     assert "--kind" in template
+    assert "--priority" in template
+    assert "--evidence" in template
+    assert "--validation-status" in template
     assert "--source" in template
     assert "--confidence" in template
     assert "relationships" in template
@@ -145,6 +148,14 @@ def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) 
 
     assert "explicit approval" in project
     assert "temporary plans" in project
+    assert "## Dependency Rules" in project
+    assert "## Repository Structure" in project
+    assert "## Build and Validation" in project
+    assert "## How to Extend This Project" in project
+    assert "## Common Mistakes" in project
+    assert "## Architecture Diagrams" in project
+    assert "aimem:id" in project
+    assert ".aimem/index/project.json" in project
     assert "Session memory is not durable memory" in session
     assert "present it as a PROJECT or USER memory candidate" in session
     assert "cross-project preferences" in user
@@ -186,6 +197,7 @@ def test_config_declares_agent_scope_and_budgets(tmp_path: Path) -> None:
     config = json.loads((root / ".aimem/config.json").read_text(encoding="utf-8"))
     assert config["scopes"]["agent"]["dir"] == ".aimem/memory/agents"
     assert config["scopes"]["agent"]["inject"] == "none"
+    assert config["index"]["dir"] == ".aimem/index"
     assert config["memory"]["warn_entries_per_section"] > 0
     assert config["memory"]["max_injection_chars"] > 0
     assert config["memory"]["deprecation_marker"] == "[DEPRECATED]"

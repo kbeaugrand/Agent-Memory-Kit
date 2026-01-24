@@ -26,10 +26,46 @@ _LABELS = {
     "session": "SESSION MEMORY",
 }
 
+_PRIORITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+_VALIDATION_RANK = {"verified": 0, "needs_review": 1, "deprecated": 2}
 
-def _clean_scope_text(config: dict, text: str) -> str:
-    """Strip header comments and deprecated (soft-deleted) bullets before injection."""
+
+def _entry_sort_key(entry: dict):
+    record = entry.get("record") or {}
+    return (
+        _PRIORITY_RANK.get(record.get("priority", "medium"), 99),
+        _VALIDATION_RANK.get(record.get("validation_status", "needs_review"), 99),
+        entry.get("section", ""),
+        entry.get("index", 0),
+    )
+
+
+def _render_entries(entries: list) -> str:
+    lines = []
+    current = None
+    for entry in sorted(entries, key=_entry_sort_key):
+        body = _common.strip_comments(entry.get("text", "")).rstrip()
+        if not body:
+            continue
+        section = entry.get("section", "")
+        if section and section != current:
+            if lines:
+                lines.append("")
+            lines.append("## " + section)
+            current = section
+        body_lines = body.split("\n")
+        lines.append("- " + body_lines[0].strip())
+        lines.extend(line.rstrip() for line in body_lines[1:] if line.rstrip())
+    return "\n".join(lines).strip()
+
+
+def _clean_scope_text(config: dict, scope: str, text: str) -> str:
+    """Strip comments and deprecated entries before injection, ranking indexed entries."""
     marker = _common.deprecation_marker(config)
+    entries = _common.parsed_entries(text, scope, _common.index_record_map(config, scope))
+    active = [entry for entry in entries if not entry["deprecated"]]
+    if active:
+        return _render_entries(active)
     return _common.strip_deprecated(_common.strip_comments(text), marker).strip()
 
 
@@ -56,14 +92,16 @@ def build_context(config: dict) -> str:
     for scope in _common.SCOPES:
         if not _common.scope_enabled(config, scope):
             continue
-        cleaned = _clean_scope_text(config, _common.read_text(_common.scope_path(config, scope)))
+        cleaned = _clean_scope_text(
+            config, scope, _common.read_text(_common.scope_path(config, scope))
+        )
         if not _common.has_content(cleaned):
             continue
         rel = _common.scope_config(config, scope).get("path", "")
         parts.append("----- {0} ({1}) -----\n{2}".format(_LABELS[scope], rel, cleaned))
 
     for name, path in _agent_parts(config):
-        cleaned = _clean_scope_text(config, _common.read_text(path))
+        cleaned = _clean_scope_text(config, "agent", _common.read_text(path))
         if not _common.has_content(cleaned):
             continue
         parts.append("----- AGENT MEMORY: {0} -----\n{1}".format(name, cleaned))

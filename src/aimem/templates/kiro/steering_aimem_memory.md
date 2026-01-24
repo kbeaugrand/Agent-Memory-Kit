@@ -24,8 +24,10 @@ into *future* sessions. Keep them distinct:
 
 ## Memory scopes
 
-- **Project memory** — `{{PROJECT_MEMORY}}` (committed, team-shared): durable repository
-  conventions, architecture decisions, build/test/run commands, gotchas, and domain terms.
+- **Project memory** — `{{PROJECT_MEMORY}}` (committed, team-shared): curated repository
+  rules, dependency directions, workflows, validation commands, decisions, patterns,
+  common mistakes, domain terms, and extension guidance that help future agents code
+  correctly.
 - **User memory** — `{{USER_MEMORY}}` (personal, cross-project): stable individual
   preferences explicitly provided by the user.
 - **Session memory** — `{{SESSION_MEMORY}}` (ephemeral, not committed): temporary working
@@ -50,6 +52,9 @@ Never resolve semantic conflicts from timestamps alone.
 A memory candidate must be important to future work, likely to remain true, reusable
 across multiple future interactions, validated by the user or repository evidence, and
 self-contained enough for a future agent to act on.
+For project memory, prefer actionable rules, workflows, dependency constraints,
+validation steps, extension checklists, decisions, and common mistakes over broad
+documentation summaries.
 
 Never memorize secrets, credentials, tokens, private keys, sensitive personal data,
 temporary plans, task progress, work in progress, unvalidated assumptions, one-off
@@ -85,11 +90,11 @@ recording script:
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<concise fact>"
 ```
 
-New entries are versioned structured records embedded inside readable Markdown bullets.
-The current schema stores `schema_version`, `id`, `scope`, `kind`, `status`, `source`,
-`confidence`, `validity`, and `relationships`. Use `--kind`, `--source`, `--confidence`,
-`--valid-from`, `--valid-until`, and `--relationship TYPE:ID` when provenance, validity,
-or relationships matter.
+New entries are readable Markdown blocks with lightweight `aimem:id` comments; complete
+metadata lives in `.aimem/index/`. Use `--kind`, `--priority`, `--evidence`,
+`--validation-status`, `--source`, `--verified-from`, `--keyword`, `--confidence`,
+`--valid-from`, `--valid-until`, and `--relationship TYPE:ID` when provenance,
+trustworthiness, retrieval hints, validity, or relationships matter.
 
 When initializing memory, read the installed template at `{{MEMORY_TEMPLATE}}` and fill
 memory according to its section guide and field definitions.
@@ -104,9 +109,9 @@ them with the management script instead of hand-editing:
 
 ```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project --kind command --source README.md --format json
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py deprecate --scope project --section Gotchas --index 2
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py restore --scope project --section Gotchas --index 2
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project --priority critical --evidence source_code --format json
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py deprecate --scope project --section "Common Mistakes" --index 2
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py restore --scope project --section "Common Mistakes" --index 2
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py delete --scope project --match "outdated note"
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope project
 ```
@@ -114,8 +119,9 @@ them with the management script instead of hand-editing:
 Prefer **deprecate** (a reversible soft-delete) over **delete**: a deprecated entry stays
 on disk but is excluded from injected context, so history is preserved and mistakes are
 recoverable. Hard-delete only after review. Use **migrate** to convert legacy plain
-Markdown bullets into structured records without changing their visible text. Record
-agent-specific facts with `record_memory.py --scope agent --agent <name>`.
+Markdown bullets or embedded `aimem:record` comments into lightweight Markdown plus
+sidecar metadata without changing visible text. Record agent-specific facts with
+`record_memory.py --scope agent --agent <name>`.
 
 ## Security
 

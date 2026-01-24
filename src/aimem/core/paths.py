@@ -11,6 +11,8 @@ AIMEM_DIR = ".aimem"
 CONFIG_FILE = ".aimem/config.json"
 MANIFEST_FILE = ".aimem/manifest.json"
 BACKUPS_DIR = ".aimem/backups"
+INDEX_DIR = ".aimem/index"
+PROJECT_INDEX = ".aimem/index/project.json"
 
 # Canonical memory files.
 MEMORY_TEMPLATE = ".aimem/memory/TEMPLATE.md"

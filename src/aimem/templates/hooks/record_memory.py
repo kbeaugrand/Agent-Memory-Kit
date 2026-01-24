@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Record a durable fact into a memory scope, safely and idempotently.
+"""Record durable AI memory into a scope, safely and idempotently.
 
 Usage:
   python3 record_memory.py --scope project --topic "Commands" --text "Run tests with pytest"
 
-The entry is redacted of obvious secrets, timestamped, de-duplicated within its section,
-and written atomically. This script depends only on the standard library.
+The entry is redacted of obvious secrets, de-duplicated within its section, written as
+readable Markdown, and indexed with full sidecar metadata. This script depends only on
+the standard library.
 """
 
 from __future__ import annotations
@@ -20,6 +21,16 @@ import _common  # noqa: E402
 _TITLES = {"project": "Project Memory", "user": "User Memory", "session": "Session Memory"}
 
 
+def _split_values(values: list) -> list:
+    result = []
+    for raw in values:
+        for item in raw.split(","):
+            value = item.strip()
+            if value:
+                result.append(value)
+    return result
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Record a fact into AI memory.")
     parser.add_argument("--scope", required=True, choices=(*_common.SCOPES, "agent"))
@@ -28,10 +39,35 @@ def main(argv=None) -> int:
     parser.add_argument("--text", required=True)
     parser.add_argument("--kind", choices=_common.MEMORY_RECORD_KINDS, default="fact")
     parser.add_argument("--status", choices=_common.MEMORY_RECORD_STATUSES, default="active")
+    parser.add_argument("--priority", choices=_common.MEMORY_PRIORITIES, default="medium")
+    parser.add_argument(
+        "--evidence",
+        action="append",
+        choices=_common.MEMORY_EVIDENCE_LEVELS,
+        default=[],
+        help="Evidence level; may be supplied multiple times.",
+    )
+    parser.add_argument(
+        "--validation-status",
+        choices=_common.MEMORY_VALIDATION_STATUSES,
+        default="needs_review",
+    )
     parser.add_argument("--source", default="manual")
+    parser.add_argument(
+        "--verified-from",
+        action="append",
+        default=[],
+        help="Human-readable source path that verifies the memory; may be repeated.",
+    )
     parser.add_argument("--confidence", type=float, default=0.8)
     parser.add_argument("--valid-from")
     parser.add_argument("--valid-until")
+    parser.add_argument(
+        "--keyword",
+        action="append",
+        default=[],
+        help="Search keyword; may be repeated or comma-separated.",
+    )
     parser.add_argument(
         "--relationship",
         action="append",
@@ -39,9 +75,28 @@ def main(argv=None) -> int:
         help="Relationship as TYPE:ID; may be supplied multiple times.",
     )
     parser.add_argument(
+        "--related",
+        action="append",
+        default=[],
+        help="Related memory id; stored as a relates_to relationship.",
+    )
+    parser.add_argument("--reason", default="")
+    parser.add_argument("--impact", default="")
+    parser.add_argument(
+        "--alternative",
+        action="append",
+        default=[],
+        help="Decision alternative; may be repeated or comma-separated.",
+    )
+    parser.add_argument(
+        "--timestamp",
+        action="store_true",
+        help="Prefix the visible entry text with a UTC timestamp.",
+    )
+    parser.add_argument(
         "--no-timestamp",
         action="store_true",
-        help="Do not prefix the entry with a UTC timestamp.",
+        help="Compatibility no-op; visible timestamps are opt-in with --timestamp.",
     )
     args = parser.parse_args(argv)
 
@@ -75,9 +130,18 @@ def main(argv=None) -> int:
             return 2
         rel_type, rel_id = raw.split(":", 1)
         relationships.append({"type": rel_type.strip(), "id": rel_id.strip()})
+    for rel_id in _split_values(args.related):
+        relationships.append({"type": "relates_to", "id": rel_id})
+
+    topic = args.topic.strip()
+    validation_status = args.validation_status
+    if args.status == "deprecated" and validation_status == "needs_review":
+        validation_status = "deprecated"
+    record_id = _common.stable_record_id(args.scope, topic, args.kind, text)
+    existing_record = _common.get_index_record(config, args.scope, record_id)
 
     try:
-        record = _common.make_record(
+        record = existing_record or _common.make_record(
             args.scope,
             args.kind,
             args.status,
@@ -86,21 +150,34 @@ def main(argv=None) -> int:
             args.valid_from,
             args.valid_until,
             relationships,
+            record_id=record_id,
+            section=topic,
+            text=text,
+            priority=args.priority,
+            evidence=args.evidence or ["agent_inferred"],
+            validation_status=validation_status,
+            verified_from=_split_values(args.verified_from),
+            keywords=_split_values(args.keyword),
+            agent=args.agent or "",
+            reason=args.reason.strip(),
+            impact=args.impact.strip(),
+            alternatives=_split_values(args.alternative),
         )
     except ValueError as exc:
         sys.stderr.write("aimem: invalid memory record: {0}\n".format(exc))
         return 2
 
-    entry_text = text if args.no_timestamp else "[{0}] {1}".format(record["created_at"], text)
-    entry = _common.attach_record(entry_text, record)
+    entry_text = "[{0}] {1}".format(record["created_at"], text) if args.timestamp else text
+    entry = _common.format_memory_entry(entry_text, record)
 
-    topic = args.topic.strip()
     existing = _common.read_text(path)
     if not existing.strip():
         existing = "# {0}\n\n".format(title)
 
     updated = _common.add_entry(existing, topic, entry)
     _common.atomic_write(path, updated)
+    if existing_record is None:
+        _common.upsert_index_record(config, record)
 
     warn_limit = int(config.get("memory", {}).get("warn_entries_per_section", 50))
     active = _common.count_active_entries(updated, topic)

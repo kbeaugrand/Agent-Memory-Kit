@@ -1,44 +1,87 @@
 # Project Memory
 
 <!--
-Canonical PROJECT memory for AI agents. Committed to version control and shared with the
-team. Agents read this automatically at the start of a session.
+Canonical PROJECT memory for AI software development agents. Commit this Markdown file
+with the repository. It is the human-readable source of truth; complete machine metadata
+lives in `.aimem/index/project.json`.
 
 RECORD here only after explicit approval or direct user instruction: durable repository
-conventions, architecture decisions, build/test/run commands, gotchas, and domain terms
-that are validated, reusable, and useful to a teammate's future agent.
+facts, architecture rules, conventions, workflows, validation commands, dependency rules,
+known limitations, domain language, and project-specific mistakes that help a future
+agent write correct code.
 DO NOT record: secrets, tokens, passwords, personal data, temporary plans, task progress,
 work in progress, unvalidated assumptions, one-off implementation details, full
-conversation transcripts, or ephemeral task notes (use session memory for those).
+conversation transcripts, or facts that do not improve future coding decisions.
 
 Preferred way to add an entry:
-  {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Commands" --text "..."
+  {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Architecture" --priority high --evidence source_code --validation-status verified --source "README.md" --text "..."
 
 Before initializing or filling project memory, read {{MEMORY_TEMPLATE}} and use its
-section guide and entry fields.
+curation rules. Every durable entry should answer at least one question: how should I
+implement this, what must never be done, what rule exists, where is it implemented, which
+pattern should I follow, or how do I validate my work?
 
-Entries remain readable Markdown bullets and include an embedded `aimem:record` metadata
-comment with schema_version, id, scope, kind, status, source, confidence, validity, and
-relationships. Use `--kind`, `--source`, `--confidence`, `--valid-from`, `--valid-until`,
-and `--relationship TYPE:ID` on record_memory.py when provenance or lifecycle details
-matter. Convert older plain bullets with:
+Entry shape:
+- 🔥 Critical Rule: Data access must always go through `IRepository<T>`.
+  Evidence: ✓ Source Code
+  Validation: Verified
+  Source: docs/architecture.md
+  Verified from: Domain/Repositories/IRepository.cs
+  Related: relates_to mem_repository_pattern
+  Keywords: repository, persistence, database
+  <!-- aimem:id=mem_example -->
+
+Keep only the lightweight `aimem:id` comment in Markdown. Store full metadata in
+`.aimem/index/project.json`; migrate older embedded `aimem:record` JSON comments with:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope project
 
-Review or curate entries (list, deprecate, restore, delete) with:
+Review or curate entries with:
   {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list --scope project
 
-Keep entries concise, self-contained, and grouped under the headings below. Prefer
-updating an existing bullet over adding a duplicate, and prefer deprecating a stale entry
-(a reversible soft-delete) over deleting it. This header comment is stripped before
-injection, so it costs no context tokens.
+Use priorities intentionally: Critical and High entries should guide retrieval before
+recency. Prefer Verified Source Code, ADR, Documentation, or User Validated evidence over
+Agent Inferred notes. Mark stale entries Deprecated instead of silently deleting them.
+This header comment is stripped before injection, so it costs no context tokens.
 -->
-
-## Conventions
 
 ## Architecture
 
-## Commands
+## Architectural Rules
 
-## Gotchas
+## Coding Standards
+
+## Dependency Rules
+
+## Repository Structure
+
+## Build and Validation
+
+## Testing
+
+## Deployment
+
+## Security
+
+## Performance
+
+## Frameworks
+
+## Patterns
+
+## Domain
+
+## Workflows
+
+## How to Extend This Project
+
+## Common Mistakes
+
+## Architectural Decisions
+
+## Known Limitations
+
+## External Services
+
+## Architecture Diagrams
 
 ## Glossary

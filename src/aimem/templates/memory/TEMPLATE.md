@@ -1,30 +1,64 @@
 # Memory Template
 
-Use this template whenever an agent initializes or adds memory. The canonical memory files
-stay readable as Markdown, but every durable entry should be written with
-`record_memory.py` so the embedded `aimem:record` metadata is valid and queryable.
+Use this template whenever an agent initializes, records, migrates, or curates memory.
+Canonical memory files stay readable as Markdown. Full machine metadata belongs in the
+sidecar index under `.aimem/index/`, and Markdown entries should keep only lightweight
+`<!-- aimem:id=... -->` comments.
 
 ## Entry Fields
 
 - `scope`: `project`, `user`, `session`, or `agent`.
 - `topic`: existing or new `##` heading in the target memory file.
-- `kind`: `fact`, `command`, `convention`, `decision`, `gotcha`, `glossary`, or `note`.
-- `status`: `active` for usable memory; `deprecated`, `superseded`, or `invalid` for lifecycle changes.
-- `source`: repository evidence, user approval, or migration source such as `README.md`, `pyproject.toml`, `user`, or `migration`.
-- `confidence`: decimal from `0` to `1`; use higher values only for verified repository evidence or explicit user statements.
+- `kind`: `fact`, `convention`, `recommendation`, `rule`, `workflow`, `command`, `decision`, `mistake`, `glossary`, `structure`, `diagram`, `limitation`, `pattern`, `external_service`, `gotcha`, or `note`.
+- `priority`: `critical`, `high`, `medium`, or `low`. Retrieval should prefer priority before recency.
+- `evidence`: one or more of `source_code`, `adr`, `documentation`, `user_validated`, or `agent_inferred`.
+- `validation_status`: `verified`, `needs_review`, or `deprecated`.
+- `source`: human-readable source that explains why the memory exists, such as `README.md`, `docs/adr/0001.md`, `user`, or `migration`.
+- `verified_from`: optional source-code paths, tests, ADRs, or docs that verify the memory.
+- `confidence`: internal decimal from `0` to `1`; keep review-facing trust in `evidence` and `validation_status`.
 - `validity`: optional validity window using `--valid-from` and `--valid-until` ISO timestamps.
 - `relationships`: optional `TYPE:ID` links such as `supersedes:mem_abc123`, `relates_to:mem_def456`, or `contradicts:mem_xyz789`.
-- `text`: concise, self-contained Markdown sentence that remains useful without conversation history.
+- `keywords`: deterministic retrieval hints such as `repository`, `unitofwork`, `database`, or `pytest`.
+- `text`: concise, self-contained Markdown that remains useful without conversation history.
+
+## Entry Shape
+
+```markdown
+- 🔥 Critical Rule: Domain services never depend on Infrastructure components.
+  Evidence: ✓ Source Code
+  Validation: Verified
+  Source: docs/architecture.md
+  Verified from: src/domain/services.py
+  Related: relates_to mem_clean_architecture
+  Keywords: domain, infrastructure, dependency-rule
+  <!-- aimem:id=mem_01JXXXX -->
+```
 
 ## Project Memory Sections
 
-Fill `{{PROJECT_MEMORY}}` with durable team-shared facts under these headings:
+Fill `{{PROJECT_MEMORY}}` with durable team-shared memory under retrieval-oriented headings:
 
-- `Conventions`: coding, review, naming, formatting, or workflow rules.
-- `Architecture`: stable modules, ownership boundaries, data flows, generated artifacts, or integration points.
-- `Commands`: verified build, test, lint, run, package, or release commands.
-- `Gotchas`: recurring pitfalls, platform constraints, broken paths, or non-obvious setup details.
-- `Glossary`: domain terms, acronyms, product names, or repository-specific vocabulary.
+- `Architecture`: stable module boundaries, runtime shape, high-level data flow.
+- `Architectural Rules`: enforceable rules such as forbidden dependencies or persistence rules.
+- `Coding Standards`: naming, formatting, review, style, and implementation conventions.
+- `Dependency Rules`: allowed and forbidden dependency directions.
+- `Repository Structure`: concise map of folders and ownership.
+- `Build and Validation`: run, build, lint, format, coverage, packaging, and when to use each command.
+- `Testing`: test frameworks, test layout, required test patterns, and fixture conventions.
+- `Deployment`: release, hosting, packaging, and environment workflows.
+- `Security`: secret handling, authentication, authorization, and unsafe patterns to avoid.
+- `Performance`: important constraints, hot paths, caching rules, and scalability assumptions.
+- `Frameworks`: project-specific framework usage and integration rules.
+- `Patterns`: recurring implementation patterns agents should copy.
+- `Domain`: durable business/domain concepts needed for correct code.
+- `Workflows`: reusable procedures such as creating an entity, adding an endpoint, or shipping a release.
+- `How to Extend This Project`: feature-addition checklist optimized for coding agents.
+- `Common Mistakes`: actionable wrong/right pairs that prevent repeated errors.
+- `Architectural Decisions`: decisions with reason, impact, and alternatives.
+- `Known Limitations`: current constraints agents must respect.
+- `External Services`: service contracts, queues, APIs, databases, and integration boundaries.
+- `Architecture Diagrams`: Mermaid diagrams generated only from clear evidence.
+- `Glossary`: project-specific terms and acronyms.
 
 ## Session Memory Sections
 
@@ -47,12 +81,12 @@ Fill `{{USER_MEMORY}}` only from explicit user-provided preferences:
 Prefer commands like these instead of hand-editing bullets:
 
 ```sh
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Commands" --kind command --source "pyproject.toml" --confidence 0.9 --text "Run the full test suite with `python -m pytest -q`."
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Architecture" --kind decision --source "README.md" --confidence 0.8 --relationship relates_to:mem_example --text "Memory hooks are generated into `.aimem/hooks/` and run without importing the installed aimem package."
-{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope session --topic "Current goal" --kind note --source "user" --confidence 1 --text "Initialize aimem memory for this repository."
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Build and Validation" --kind command --priority high --evidence source_code --validation-status verified --source "pyproject.toml" --verified-from "tests/conftest.py" --keyword pytest --confidence 0.9 --text "Run the full test suite with `python -m pytest`."
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope project --topic "Architectural Rules" --kind rule --priority critical --evidence source_code --validation-status verified --source "src/domain" --keyword dependency-rule --text "Domain code must not import Infrastructure modules."
+{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope session --topic "Current goal" --kind note --priority medium --evidence user_validated --validation-status verified --source "user" --text "Initialize aimem memory for this repository."
 ```
 
-Convert legacy bullets without changing their visible text:
+Convert legacy bullets or embedded `aimem:record` comments without changing visible text:
 
 ```sh
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope project
@@ -60,7 +94,10 @@ Convert legacy bullets without changing their visible text:
 
 ## Fill Rules
 
-- Inspect repository evidence before writing project memory.
+- Inspect source code, tests, manifests, README files, ADRs, and existing instructions before writing project memory.
+- Prefer rules, workflows, dependency directions, validation commands, extension checklists, common mistakes, and project-specific patterns over broad descriptions.
+- Keep immutable facts, conventions, recommendations, decisions, and workflows as distinct memory types.
+- Generate Mermaid diagrams only when the repository contains enough evidence to avoid invention.
 - Prefer updating or deprecating existing entries over adding duplicates.
 - Keep each entry short enough to scan quickly.
 - Do not record secrets, credentials, personal data, transient plans, unvalidated assumptions, full conversation transcripts, or facts already obvious from nearby source code.

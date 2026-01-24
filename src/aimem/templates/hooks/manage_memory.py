@@ -10,8 +10,8 @@ Examples:
   python3 manage_memory.py list --scope project --section Commands
   python3 manage_memory.py delete --scope project --section Commands --index 2
   python3 manage_memory.py delete --scope project --match "old note"
-  python3 manage_memory.py deprecate --scope project --section Gotchas --index 1
-  python3 manage_memory.py restore --scope project --section Gotchas --index 1
+    python3 manage_memory.py deprecate --scope project --section "Common Mistakes" --index 1
+    python3 manage_memory.py restore --scope project --section "Common Mistakes" --index 1
   python3 manage_memory.py list --scope agent --agent Dev
     python3 manage_memory.py migrate --scope project
 
@@ -73,7 +73,9 @@ def _cmd_list(config: dict, args) -> int:
     rows = []
     for label, path in _iter_targets(config, args.scope, args.agent):
         scope = label.split(":", 1)[0]
-        entries = _common.parsed_entries(_common.read_text(path), scope)
+        entries = _common.parsed_entries(
+            _common.read_text(path), scope, _common.index_record_map(config, scope)
+        )
         if args.section:
             entries = [item for item in entries if item["section"] == args.section]
         if args.id:
@@ -82,8 +84,46 @@ def _cmd_list(config: dict, args) -> int:
             entries = [item for item in entries if item["record"] and item["record"].get("kind") == args.kind]
         if args.status:
             entries = [item for item in entries if item["record"] and item["record"].get("status") == args.status]
+        if args.priority:
+            entries = [item for item in entries if item["record"] and item["record"].get("priority") == args.priority]
+        if args.evidence:
+            entries = [
+                item
+                for item in entries
+                if item["record"] and args.evidence in item["record"].get("evidence", [])
+            ]
+        if args.validation_status:
+            entries = [
+                item
+                for item in entries
+                if item["record"] and item["record"].get("validation_status") == args.validation_status
+            ]
         if args.source:
             entries = [item for item in entries if item["record"] and item["record"].get("source") == args.source]
+        if args.verified_from:
+            entries = [
+                item
+                for item in entries
+                if item["record"] and args.verified_from in item["record"].get("verified_from", [])
+            ]
+        if args.keyword:
+            needle = args.keyword.lower()
+            entries = [
+                item
+                for item in entries
+                if needle in item["text"].lower()
+                or (
+                    item["record"]
+                    and needle in [keyword.lower() for keyword in item["record"].get("keywords", [])]
+                )
+            ]
+        if args.related:
+            entries = [
+                item
+                for item in entries
+                if item["record"]
+                and any(rel.get("id") == args.related for rel in item["record"].get("relationships", []))
+            ]
         if not entries:
             continue
         any_rows = True
@@ -110,8 +150,13 @@ def _cmd_list(config: dict, args) -> int:
             record = entry["record"] or {}
             meta = ""
             if record:
-                meta = " id={0} kind={1} status={2} source={3}".format(
-                    record.get("id"), record.get("kind"), record.get("status"), record.get("source")
+                meta = " id={0} kind={1} priority={2} status={3} validation={4} source={5}".format(
+                    record.get("id"),
+                    record.get("kind"),
+                    record.get("priority"),
+                    record.get("status"),
+                    record.get("validation_status"),
+                    record.get("source"),
                 )
             sys.stdout.write("  [{0}]{1}{2} {3}\n".format(index, flag, meta, body))
         sys.stdout.write("\n")
@@ -150,6 +195,15 @@ def _cmd_mutate(config: dict, args, action: str) -> int:
         sys.stderr.write("aimem: --section and --index (or --match for delete) are required\n")
         return 2
 
+    records = _common.index_record_map(config, args.scope)
+    entries = _common.parsed_entries(text, args.scope, records)
+    target = None
+    for entry in entries:
+        if entry["section"] == section and entry["index"] == index:
+            target = entry
+            break
+    record_id = target.get("id") if target else None
+
     marker = _common.deprecation_marker(config)
     if action == "delete":
         updated, ok = _common.delete_entry(text, section, index)
@@ -162,14 +216,20 @@ def _cmd_mutate(config: dict, args, action: str) -> int:
         sys.stderr.write("aimem: no entry at section '{0}' index {1}\n".format(section, index))
         return 2
     _common.atomic_write(path, updated)
+    if record_id:
+        if action == "delete":
+            _common.remove_index_record(config, args.scope, record_id)
+        else:
+            _common.set_index_deprecated(config, args.scope, record_id, action == "deprecate")
     sys.stdout.write("aimem: {0}d '{1}' #{2} in {3}\n".format(action, section, index, _rel(path)))
     return 0
 
 
-def _migrate_text(markdown: str, scope: str, source: str) -> "tuple[str, int]":
+def _migrate_text(markdown: str, scope: str, source: str) -> "tuple[str, int, list]":
     lines = markdown.split("\n")
     section = ""
     changed = 0
+    records = []
     for index, line in enumerate(lines):
         if line.startswith("## "):
             section = line[3:].strip()
@@ -179,31 +239,40 @@ def _migrate_text(markdown: str, scope: str, source: str) -> "tuple[str, int]":
             continue
         indent = line[: len(line) - len(line.lstrip())]
         body = stripped[2:]
-        visible, record = _common._split_record_comment(body)
-        if record:
+        if _common.record_id_from_entry(body):
             continue
+        visible, record = _common._split_record_comment(body)
         status = "deprecated" if visible.lstrip().startswith(_common.deprecation_marker({})) else "active"
         clean = visible
         if status == "deprecated":
             clean = clean.lstrip()[len(_common.DEPRECATION_MARKER) :].lstrip()
         try:
-            record = _common.make_record(
-                scope,
-                "fact",
-                status,
-                source,
-                0.5,
-                _common.now_iso(),
-                None,
-                [],
-                _common.migration_record_id(scope, section, clean),
-            )
+            if record:
+                record = _common.legacy_record_to_v2(record, section, clean, source=None)
+            else:
+                record = _common.make_record(
+                    scope,
+                    "fact",
+                    status,
+                    source,
+                    0.5,
+                    _common.now_iso(),
+                    None,
+                    [],
+                    _common.migration_record_id(scope, section, clean),
+                    section=section,
+                    text=clean,
+                    priority="medium",
+                    evidence=["agent_inferred"],
+                    validation_status="deprecated" if status == "deprecated" else "needs_review",
+                )
         except ValueError:
             continue
         lines[index] = indent + "- " + _common.attach_record(visible, record)
+        records.append(record)
         changed += 1
     text = "\n".join(lines)
-    return (text if text.endswith("\n") else text + "\n"), changed
+    return (text if text.endswith("\n") else text + "\n"), changed, records
 
 
 def _cmd_migrate(config: dict, args) -> int:
@@ -214,12 +283,14 @@ def _cmd_migrate(config: dict, args) -> int:
         if not text.strip():
             continue
         scope = label.split(":", 1)[0]
-        updated, count = _migrate_text(text, scope, args.source)
+        updated, count, records = _migrate_text(text, scope, args.source)
         if count:
             changed_entries += count
             changed_files += 1
             if not args.dry_run:
                 _common.atomic_write(path, updated)
+                for record in records:
+                    _common.upsert_index_record(config, record)
             sys.stdout.write("aimem: migrated {0} entries in {1}\n".format(count, _rel(path)))
     if not changed_entries:
         sys.stdout.write("aimem: no legacy memory entries found.\n")
@@ -248,7 +319,13 @@ def main(argv=None) -> int:
     p_list.add_argument("--id")
     p_list.add_argument("--kind", choices=_common.MEMORY_RECORD_KINDS)
     p_list.add_argument("--status", choices=_common.MEMORY_RECORD_STATUSES)
+    p_list.add_argument("--priority", choices=_common.MEMORY_PRIORITIES)
+    p_list.add_argument("--evidence", choices=_common.MEMORY_EVIDENCE_LEVELS)
+    p_list.add_argument("--validation-status", choices=_common.MEMORY_VALIDATION_STATUSES)
     p_list.add_argument("--source")
+    p_list.add_argument("--verified-from")
+    p_list.add_argument("--keyword")
+    p_list.add_argument("--related")
     p_list.add_argument("--format", choices=("text", "json"), default="text")
 
     p_delete = subparsers.add_parser("delete", help="Permanently remove an entry.")

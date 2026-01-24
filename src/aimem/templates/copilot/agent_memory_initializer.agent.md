@@ -14,8 +14,9 @@ initialize memory or when the user approves the exact entries.
   sections, field definitions, and fill rules.
 - Inspect nearby project evidence such as `README.md`, package manifests, build and test
   configuration, existing instructions, and source layout.
-- Seed or propose `{{PROJECT_MEMORY}}` entries with durable, team-shared facts about the
-  project purpose, architecture, common commands, conventions, and important paths.
+- Seed or propose `{{PROJECT_MEMORY}}` entries with durable, team-shared rules,
+  dependency directions, repository structure, build and validation workflows, extension
+  checklists, common mistakes, architectural decisions, patterns, and domain terms.
 - Seed `{{SESSION_MEMORY}}` only with short notes that are useful for the current setup
   session and should not become permanent project facts.
 - If user preferences are explicitly provided, suggest adding them to `{{USER_MEMORY}}`;
@@ -26,8 +27,11 @@ initialize memory or when the user approves the exact entries.
   candidate with scope, action, target, reason, and exact proposed content; require
   explicit approval before writing.
 - Use `record_memory.py` fields from `{{MEMORY_TEMPLATE}}` (`scope`, `topic`, `kind`,
-  `status`, `source`, `confidence`, `validity`, `relationships`, and `text`) instead of
-  hand-editing bullets whenever possible.
+  `priority`, `evidence`, `validation_status`, `source`, `verified_from`, `keywords`,
+  `confidence`, `validity`, `relationships`, and `text`) instead of hand-editing bullets
+  whenever possible.
+- Generate Mermaid architecture diagrams only when source, configuration, or
+  documentation evidence makes the dependency direction clear.
 - Prefer concise entries that future agents can act on quickly.
 - Never store secrets, tokens, passwords, credentials, or personal data. Redact anything
   sensitive you encounter and report it.

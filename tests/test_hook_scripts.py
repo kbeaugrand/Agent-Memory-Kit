@@ -127,7 +127,9 @@ def test_record_deduplicates(make_project, run_hook) -> None:
             "--no-timestamp",
         )
     text = (root / ".aimem/memory/project.md").read_text(encoding="utf-8")
-    assert text.count("- Same note") == 1
+    assert text.count("Same note") == 1
+    index = json.loads((root / ".aimem/index/project.json").read_text(encoding="utf-8"))
+    assert len(index["records"]) == 1
 
 
 def test_record_writes_structured_schema_and_list_queries(make_project, run_hook) -> None:
@@ -143,20 +145,43 @@ def test_record_writes_structured_schema_and_list_queries(make_project, run_hook
         "Use pytest for tests",
         "--kind",
         "command",
+        "--priority",
+        "critical",
+        "--evidence",
+        "source_code",
+        "--validation-status",
+        "verified",
         "--source",
         "README.md",
+        "--verified-from",
+        "tests/test_hook_scripts.py",
+        "--keyword",
+        "pytest",
         "--confidence",
         "0.9",
         "--valid-from",
         "2026-07-12T00:00:00Z",
         "--relationship",
         "supersedes:mem_old",
+        "--related",
+        "mem_related",
         "--no-timestamp",
     )
     assert result.returncode == 0
 
     raw = (root / ".aimem/memory/project.md").read_text(encoding="utf-8")
-    assert "<!-- aimem:record" in raw
+    assert "<!-- aimem:record" not in raw
+    assert "<!-- aimem:id=" in raw
+    assert "🔥 Critical Command: Use pytest for tests" in raw
+    assert "Evidence: ✓ Source Code" in raw
+    assert "Validation: Verified" in raw
+    assert "Verified from: tests/test_hook_scripts.py" in raw
+    assert "Keywords: pytest" in raw
+
+    index = json.loads((root / ".aimem/index/project.json").read_text(encoding="utf-8"))
+    assert index["schema_version"] == 2
+    assert len(index["records"]) == 1
+    indexed = index["records"][0]
 
     listing = run_hook(
         root,
@@ -166,6 +191,10 @@ def test_record_writes_structured_schema_and_list_queries(make_project, run_hook
         "project",
         "--kind",
         "command",
+        "--priority",
+        "critical",
+        "--evidence",
+        "source_code",
         "--source",
         "README.md",
         "--format",
@@ -174,14 +203,25 @@ def test_record_writes_structured_schema_and_list_queries(make_project, run_hook
     rows = json.loads(listing.stdout)
     assert len(rows) == 1
     record = rows[0]["record"]
-    assert record["schema_version"] == 1
+    assert record == indexed
+    assert record["schema_version"] == 2
     assert record["scope"] == "project"
+    assert record["section"] == "Commands"
     assert record["kind"] == "command"
+    assert record["priority"] == "critical"
+    assert record["evidence"] == ["source_code"]
+    assert record["validation_status"] == "verified"
     assert record["status"] == "active"
     assert record["source"] == "README.md"
+    assert record["verified_from"] == ["tests/test_hook_scripts.py"]
+    assert record["keywords"] == ["pytest"]
     assert record["confidence"] == 0.9
     assert record["validity"] == {"from": "2026-07-12T00:00:00Z", "until": None}
-    assert record["relationships"] == [{"type": "supersedes", "id": "mem_old"}]
+    assert record["relationships"] == [
+        {"type": "supersedes", "id": "mem_old"},
+        {"type": "relates_to", "id": "mem_related"},
+    ]
+    assert record["text"] == "Use pytest for tests"
 
 
 def test_record_rejects_invalid_schema_values(make_project, run_hook) -> None:
@@ -224,9 +264,12 @@ def test_manage_migrate_converts_legacy_markdown(make_project, run_hook) -> None
     result = run_hook(root, "manage_memory.py", "migrate", "--scope", "project")
     assert result.returncode == 0
     text = project_memory.read_text(encoding="utf-8")
-    assert text.count("<!-- aimem:record") == 2
+    assert text.count("<!-- aimem:id=") == 2
+    assert "<!-- aimem:record" not in text
     assert "legacy command" in text
     assert "[DEPRECATED] old command" in text
+    index = json.loads((root / ".aimem/index/project.json").read_text(encoding="utf-8"))
+    assert len(index["records"]) == 2
 
     listing = run_hook(
         root,
@@ -243,6 +286,7 @@ def test_manage_migrate_converts_legacy_markdown(make_project, run_hook) -> None
     assert len(rows) == 1
     assert rows[0]["record"]["source"] == "migration"
     assert rows[0]["record"]["status"] == "deprecated"
+    assert rows[0]["record"]["validation_status"] == "deprecated"
 
 
 def _record(run_hook, root, *pairs: str):
@@ -306,7 +350,10 @@ def test_deprecate_hides_from_injection_then_restore(make_project, run_hook) -> 
         "1",
     )
     body = (root / ".aimem/memory/project.md").read_text(encoding="utf-8")
-    assert "[DEPRECATED] Flaky note" in body  # retained on disk
+    assert "[DEPRECATED]" in body  # retained on disk
+    assert "Flaky note" in body
+    index = json.loads((root / ".aimem/index/project.json").read_text(encoding="utf-8"))
+    assert index["records"][0]["status"] == "deprecated"
 
     hidden = run_hook(root, "inject_memory.py", "--format", "text")
     assert "Flaky note" not in hidden.stdout  # excluded from injected context
@@ -324,6 +371,44 @@ def test_deprecate_hides_from_injection_then_restore(make_project, run_hook) -> 
     )
     shown = run_hook(root, "inject_memory.py", "--format", "text")
     assert "Flaky note" in shown.stdout
+    index = json.loads((root / ".aimem/index/project.json").read_text(encoding="utf-8"))
+    assert index["records"][0]["status"] == "active"
+
+
+def test_inject_orders_priority_before_recency(make_project, run_hook) -> None:
+    root = make_project("--both")
+    _record(
+        run_hook,
+        root,
+        "--scope",
+        "project",
+        "--topic",
+        "Architecture",
+        "--priority",
+        "low",
+        "--text",
+        "Low priority note",
+    )
+    _record(
+        run_hook,
+        root,
+        "--scope",
+        "project",
+        "--topic",
+        "Architecture",
+        "--priority",
+        "critical",
+        "--evidence",
+        "source_code",
+        "--validation-status",
+        "verified",
+        "--text",
+        "Critical priority note",
+    )
+
+    result = run_hook(root, "inject_memory.py", "--format", "text")
+    assert result.returncode == 0
+    assert result.stdout.index("Critical priority note") < result.stdout.index("Low priority note")
 
 
 def test_consolidate_preserves_deprecated(make_project, run_hook) -> None:

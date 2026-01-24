@@ -10,10 +10,10 @@ current task, present it as a PROJECT or USER memory candidate and require expli
 approval before activation. Do not store secrets, credentials, sensitive personal data, or
 full conversation transcripts here. This header comment is stripped before injection.
 
-Entries are readable Markdown bullets with embedded `aimem:record` metadata for schema
-version, id, scope, kind, status, source, confidence, validity, and relationships. Prefer
-the generated record/manage scripts and the template in {{MEMORY_TEMPLATE}} so metadata
-stays valid. Convert older bullets with:
+Entries are readable Markdown bullets with lightweight `aimem:id` comments. Full
+metadata lives in `.aimem/index/`. Prefer the generated record/manage scripts and the
+template in {{MEMORY_TEMPLATE}} so priority, evidence, validation status, provenance, and
+relationships stay valid. Convert older bullets or embedded `aimem:record` comments with:
 	{{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py migrate --scope session
 -->
 

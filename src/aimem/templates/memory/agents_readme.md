@@ -5,8 +5,8 @@ specific agent rather than the whole project. This mirrors coday's agent-scoped 
 (`memory list --project --agent=Dev`).
 
 - One file per agent: `<agent-name>.md` (for example `Dev.md`, `Reviewer.md`).
-- Same structure as project memory: `## Section` headings with readable `- ` bullet
-	entries plus embedded `aimem:record` metadata.
+- Same structure as project memory: `## Section` headings with readable `- ` entries,
+	lightweight `aimem:id` comments, and full metadata in `.aimem/index/agent.json`.
 - Committed with the project so the whole team shares each agent's memory.
 - This `README.md` is documentation only and is never injected into context.
 
@@ -16,9 +16,10 @@ specific agent rather than the whole project. This mirrors coday's agent-scoped 
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope agent --agent Dev --topic "Conventions" --text "..."
 ```
 
-Use `--kind`, `--source`, `--confidence`, `--valid-from`, `--valid-until`, and
-`--relationship TYPE:ID` to store provenance, confidence, validity windows, and
-relationships.
+Use `--kind`, `--priority`, `--evidence`, `--validation-status`, `--source`,
+`--verified-from`, `--keyword`, `--confidence`, `--valid-from`, `--valid-until`, and
+`--relationship TYPE:ID` to store provenance, evidence, retrieval hints, confidence,
+validity windows, and relationships.
 
 ## Listing / curating agent memory
 
