@@ -1,0 +1,147 @@
+{
+  "aimem_version": "0.1.0",
+  "files": {
+    ".aimem/config.json": {
+      "hash": "sha256:0bd5b0d4cdcf19f977fae5dc51e6f285c0c0516dd2fb3f2782bcbe8e673c8cf3",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/_common.py": {
+      "hash": "sha256:180871020c642f828224099295c22f34c39a5b5e2cb14700172b5e5d38a150da",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/consolidate_memory.py": {
+      "hash": "sha256:b6acafc2568e7307a006c26812b44769da902643c7c862655d94e0bca902dbff",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/guard_memory.py": {
+      "hash": "sha256:ff1db11a1bfc0900f882feca7d94ec1f4a083fb28bb5e555ff3b853b64540f59",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/inject_memory.py": {
+      "hash": "sha256:df4badbe3b1ad318eed966e2aa15f8d7194c670618232517931023dcdaca4e76",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/manage_memory.py": {
+      "hash": "sha256:4acca79f6f24d17c4fdae9d09db8585f5386b92720bbcd514aa7942ed5f1a8f0",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/hooks/record_memory.py": {
+      "hash": "sha256:681f3e1bd8b8fc3b12b3a6f08e773d4363a463fb166afd9fa87dd638797db809",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/index/project.json": {
+      "hash": "sha256:5d2f1831ad2812ad0ecf94359f851b3cc0903b6b35791bde620251f9da96db5f",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/memory/TEMPLATE.md": {
+      "hash": "sha256:2469772684bd6ba8f135c12cf7c5691295a7f932b964ae75f0d55afbf27f4d2d",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/memory/agents/README.md": {
+      "hash": "sha256:2719509a6e6bb6f50aebc87124d6abd503da210a3656cf3ece1a5c5f0864dc9e",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/memory/project.md": {
+      "hash": "sha256:e3ebe2418bc7170bfe27c108ebd34bab1ee7cfcbf8cc83e5feb28418665f56ad",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".aimem/memory/session/current.md": {
+      "hash": "sha256:a0e749e094fa2d8f29d25ef844c82ca17ff391a5da6722be02e338059a9c8697",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".github/agents/memory-curator.agent.md": {
+      "hash": "sha256:258ea893cc8f51069587c84ed96098fc4dee0173d42d7cf3d7b9aa341975d013",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".github/agents/memory-initializer.agent.md": {
+      "hash": "sha256:348e807be54bda1797c5d821032406fa3e8272300abcacbd34454ecb3a56ce78",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".github/copilot-instructions.md": {
+      "hash": "sha256:bf69c08f450bb8772f78cf81cab3d12ff3a9d0271ce2055c809a2cb75d9b6a8f",
+      "mode": "shared",
+      "template_version": "0.1.0"
+    },
+    ".github/hooks/aimem-memory.json": {
+      "hash": "sha256:46af5afb84ef0c7ee99a113fc7a751d559ebc86bd992c78c4330e94eb344cbd1",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".github/instructions/aimem-memory.instructions.md": {
+      "hash": "sha256:dd67c8680daee3ccc8e199646a5c0c0fbd1364e9aa6df1eb3995df782742ab2f",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".gitignore": {
+      "hash": "sha256:cf069c3d34802c9d997a5a2d42dfe797ac5a0a0344dc63609a424eb2e7aaf00d",
+      "mode": "shared",
+      "template_version": "0.1.0"
+    },
+    ".kiro/agents/memory-curator.md": {
+      "hash": "sha256:c463b66846cf2570aca1fc16116e8c88c81e86b5b0182989f3de9209f82e435d",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/agents/memory-initializer.md": {
+      "hash": "sha256:98c837fc01be2da71d2060cf36e8f1935466dadabc9d3538756e6875b650bde6",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/hooks/aimem-memory.kiro.hook": {
+      "hash": "sha256:29124edcd66db961c9d897098e93a6c49165d1e22817ac460b17fb8ad9fee51f",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/settings/mcp.json": {
+      "hash": "sha256:1ced6d705a44ad2f328d69ea79f467e749e9d46e6c88fe66f0cf7efca31de765",
+      "mode": "json_merge",
+      "template_version": "0.1.0"
+    },
+    ".kiro/steering/aimem-memory.md": {
+      "hash": "sha256:c84c914ce1505bc2f0f5cad4c83abb578078c3c1f9e0f9354c026ad58a799e21",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/steering/product.md": {
+      "hash": "sha256:5ceb7a3735d39b44353a26aa08f2bbc63191e3c247628ab0f82432535287fd83",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/steering/structure.md": {
+      "hash": "sha256:f8e9a9197ac31ea5ad7816860714b8401d23a147d9c15c9666a5dcbb0249d87d",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/steering/tech.md": {
+      "hash": "sha256:fc0f3964dbdd464181d958c914a5df906468696625e7bda9f679f10a9b36acd6",
+      "mode": "seed",
+      "template_version": "0.1.0"
+    },
+    ".vscode/mcp.json": {
+      "hash": "sha256:c26064bf92c5bcf46cab9048417ad0c014cb0aa72abf6d7dbc82e8447149b6e5",
+      "mode": "json_merge",
+      "template_version": "0.1.0"
+    },
+    "AGENTS.md": {
+      "hash": "sha256:1beaef69f91c804ac2b692824ed9a43d79a47cc5f5ef84231aa152b1c53868de",
+      "mode": "shared",
+      "template_version": "0.1.0"
+    }
+  },
+  "schema_version": 1,
+  "updated_at": "2026-07-14T14:07:22Z"
+}

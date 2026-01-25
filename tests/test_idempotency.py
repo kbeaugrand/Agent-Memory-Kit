@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import sys
 from pathlib import Path
 
 from aimem.cli import main
@@ -73,3 +75,26 @@ def test_shared_block_preserves_surrounding(tmp_path: Path) -> None:
     assert "# Heading" in updated
     assert "keep me" in updated
     assert "AIMEM:BEGIN" in updated
+
+
+def test_mcp_config_merge_preserves_other_servers(tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    root.mkdir()
+    config_path = root / ".vscode/mcp.json"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        json.dumps(
+            {
+                "inputs": [{"id": "token", "type": "promptString"}],
+                "servers": {"otherServer": {"command": "other", "args": []}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    _init(root, "--both")
+
+    data = json.loads(config_path.read_text(encoding="utf-8"))
+    assert data["inputs"] == [{"id": "token", "type": "promptString"}]
+    assert data["servers"]["otherServer"] == {"command": "other", "args": []}
+    assert data["servers"]["aimem"]["command"] == sys.executable

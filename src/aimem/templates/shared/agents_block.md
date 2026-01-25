@@ -15,6 +15,13 @@ with scope, action, target, reason, and exact proposed content. Approval require
 Only after explicit approval, or when the user directly asks you to record memory, use:
 
 ```
+memory_propose -> memory_approve
+memory_search | memory_get | memory_context | memory_handoff | memory_conflicts
+```
+
+If MCP is unavailable, fall back to:
+
+```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<concise fact>"
 ```
 

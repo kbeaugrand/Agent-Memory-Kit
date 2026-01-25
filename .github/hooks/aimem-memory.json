@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/inject_memory.py --format copilot --event SessionStart",
+        "windows": "python3 .aimem/hooks/inject_memory.py --format copilot --event SessionStart",
+        "timeout": 20
+      }
+    ],
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/guard_memory.py --mode copilot",
+        "windows": "python3 .aimem/hooks/guard_memory.py --mode copilot",
+        "timeout": 15
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/consolidate_memory.py --mode copilot",
+        "windows": "python3 .aimem/hooks/consolidate_memory.py --mode copilot",
+        "timeout": 20
+      }
+    ],
+    "SessionEnd": [
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/consolidate_memory.py",
+        "windows": "python3 .aimem/hooks/consolidate_memory.py",
+        "timeout": 20
+      }
+    ]
+  }
+}

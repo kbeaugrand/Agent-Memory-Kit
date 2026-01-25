@@ -13,6 +13,8 @@ MANIFEST_FILE = ".aimem/manifest.json"
 BACKUPS_DIR = ".aimem/backups"
 INDEX_DIR = ".aimem/index"
 PROJECT_INDEX = ".aimem/index/project.json"
+VECTOR_INDEX = ".aimem/index/vector.json"
+PROPOSALS_DIR = ".aimem/proposals"
 
 # Canonical memory files.
 MEMORY_TEMPLATE = ".aimem/memory/TEMPLATE.md"
@@ -35,6 +37,7 @@ HOOK_GUARD = ".aimem/hooks/guard_memory.py"
 HOOK_MANAGE = ".aimem/hooks/manage_memory.py"
 
 # Kiro artifacts.
+KIRO_MCP_CONFIG = ".kiro/settings/mcp.json"
 KIRO_STEERING_MEMORY = ".kiro/steering/aimem-memory.md"
 KIRO_STEERING_PRODUCT = ".kiro/steering/product.md"
 KIRO_STEERING_TECH = ".kiro/steering/tech.md"
@@ -44,6 +47,7 @@ KIRO_AGENT_CURATOR = ".kiro/agents/memory-curator.md"
 KIRO_HOOK = ".kiro/hooks/aimem-memory.kiro.hook"
 
 # GitHub Copilot artifacts.
+VSCODE_MCP_CONFIG = ".vscode/mcp.json"
 COPILOT_INSTRUCTIONS = ".github/copilot-instructions.md"
 COPILOT_MEMORY_INSTRUCTIONS = ".github/instructions/aimem-memory.instructions.md"
 COPILOT_AGENT_INITIALIZER = ".github/agents/memory-initializer.agent.md"

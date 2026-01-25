@@ -20,6 +20,10 @@ accurate, concise, and safe to share without activating durable memory silently.
 - Prefer updating an existing entry over creating a duplicate.
 - Present exact add, update, deprecate, or delete proposals and require explicit approval
   before changing active project or user memory.
+- Prefer the shared MCP memory service when available: use `memory_search`,
+  `memory_get`, `memory_context`, `memory_handoff`, and `memory_conflicts` for inspection,
+  `memory_propose` for non-mutating changes, and `memory_approve` only after explicit
+  approval. Fall back to the generated scripts when MCP is unavailable.
 - Prefer deprecating stale entries (a reversible soft-delete) over deleting them, and
   hard-delete deprecated entries only after review. Watch the per-section size budget and
   keep agent-scoped files focused as well.

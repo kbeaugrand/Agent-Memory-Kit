@@ -49,7 +49,7 @@
     {
       "name": "aimem-persist-memory",
       "description": "Remind the agent to persist durable memories before finishing.",
-      "trigger": "Stop",
+      "trigger": "SessionEnd",
       "action": {
         "type": "agent",
         "prompt": "Review this session. If any durable, non-secret rules, decisions, conventions, validation commands, workflows, common mistakes, or domain facts emerged, record them to the appropriate memory scope using .aimem/hooks/record_memory.py with priority, evidence, validation status, source, and keywords (project for team-shared repo facts, user for personal cross-project preferences, session for ephemeral notes). Never store secrets. If nothing durable emerged, do nothing."

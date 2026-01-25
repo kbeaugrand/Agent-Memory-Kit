@@ -1,0 +1,346 @@
+{
+  "records": [
+    {
+      "confidence": 0.97,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "source_code"
+      ],
+      "id": "mem_e7cae677d8a68eda",
+      "keywords": [
+        "backups",
+        "idempotency",
+        "init",
+        "seed-files"
+      ],
+      "kind": "rule",
+      "priority": "critical",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Architectural Rules",
+      "source": "tests/test_idempotency.py; src/aimem/core/writer.py",
+      "status": "active",
+      "text": "`aimem init` must stay idempotent: seed files are preserved unless forced, managed files are backed up before overwrite when locally modified, shared files update only the managed block, and JSON MCP configs are merged without dropping other servers.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "tests/test_idempotency.py",
+        "src/aimem/core/writer.py"
+      ]
+    },
+    {
+      "confidence": 0.97,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_14bb566a30c8f65a",
+      "keywords": [
+        "generated-files",
+        "hooks",
+        "stdlib"
+      ],
+      "kind": "rule",
+      "priority": "critical",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Architectural Rules",
+      "source": "README.md; tests/test_hook_scripts.py",
+      "status": "active",
+      "text": "Generated project-local hook scripts under `.aimem/hooks/*.py` must remain self-contained and standard-library-only; tests assert the generated hooks compile and do not import the installed `aimem` package.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "README.md",
+        "tests/test_hook_scripts.py"
+      ]
+    },
+    {
+      "confidence": 0.95,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_182ae12dd911a996",
+      "keywords": [
+        "cli",
+        "copilot",
+        "kiro",
+        "mcp"
+      ],
+      "kind": "structure",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Architecture",
+      "source": "README.md; pyproject.toml; src/aimem/cli.py",
+      "status": "active",
+      "text": "aimem is a Python 3.10+ CLI that initializes repository-local AI memory artifacts for GitHub Copilot and Kiro; after init, generated files provide the memory workflow, while the optional MCP server uses the installed package runtime.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "README.md",
+        "pyproject.toml",
+        "src/aimem/cli.py"
+      ]
+    },
+    {
+      "confidence": 0.95,
+      "created_at": "2026-07-14T14:15:04Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_db956484b28ba3eb",
+      "keywords": [
+        "mypy",
+        "pytest",
+        "ruff",
+        "validation"
+      ],
+      "kind": "command",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Build and Validation",
+      "source": "README.md; pyproject.toml",
+      "status": "active",
+      "text": "For local development validation, use `ruff check .`, `ruff format --check .`, `mypy`, and `pytest`; these commands are documented in the README and configured in pyproject.toml.",
+      "updated_at": "2026-07-14T14:15:04Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:04Z",
+        "until": null
+      },
+      "verified_from": [
+        "README.md",
+        "pyproject.toml"
+      ]
+    },
+    {
+      "confidence": 0.94,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "source_code"
+      ],
+      "id": "mem_84242c849995aa7a",
+      "keywords": [
+        "launcher",
+        "npm",
+        "npx",
+        "python"
+      ],
+      "kind": "rule",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Dependency Rules",
+      "source": "bin/aimem.js; package.json",
+      "status": "active",
+      "text": "The npm/npx package is only a thin Node launcher for the Python CLI: it requires Python 3.10+, sets `PYTHONPATH` to the bundled `src` directory, and forwards arguments to `python -m aimem`.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "bin/aimem.js",
+        "package.json"
+      ]
+    },
+    {
+      "confidence": 0.93,
+      "created_at": "2026-07-14T14:16:00Z",
+      "evidence": [
+        "source_code"
+      ],
+      "id": "mem_b33e0ba394356ef3",
+      "keywords": [
+        "generated-artifacts",
+        "init",
+        "templates",
+        "tests"
+      ],
+      "kind": "workflow",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "How to Extend This Project",
+      "source": "tests/test_generated_artifacts.py; src/aimem/commands/init.py",
+      "status": "active",
+      "text": "When changing generated init artifacts, update the templates under `src/aimem/templates/` and the tests that assert generated tree shape, hook JSON, instruction frontmatter, unresolved template tokens, scope boundaries, and config budgets.",
+      "updated_at": "2026-07-14T14:16:00Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:16:00Z",
+        "until": null
+      },
+      "verified_from": [
+        "tests/test_generated_artifacts.py",
+        "src/aimem/commands/init.py"
+      ]
+    },
+    {
+      "confidence": 0.97,
+      "created_at": "2026-07-14T14:16:00Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_30f26f11a81aa10d",
+      "keywords": [
+        "index",
+        "manage_memory",
+        "markdown",
+        "record_memory"
+      ],
+      "kind": "pattern",
+      "priority": "critical",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Patterns",
+      "source": ".aimem/memory/TEMPLATE.md; README.md; tests/test_hook_scripts.py",
+      "status": "active",
+      "text": "Canonical memory stays as readable Markdown, while rich metadata belongs in `.aimem/index/*.json`; Markdown entries should keep only lightweight `<!-- aimem:id=... -->` comments, and agents should use `record_memory.py` or `manage_memory.py` to keep Markdown and sidecar indexes synchronized.",
+      "updated_at": "2026-07-14T14:16:00Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:16:00Z",
+        "until": null
+      },
+      "verified_from": [
+        ".aimem/memory/TEMPLATE.md",
+        "README.md",
+        "tests/test_hook_scripts.py"
+      ]
+    },
+    {
+      "confidence": 0.92,
+      "created_at": "2026-07-14T14:16:00Z",
+      "evidence": [
+        "source_code"
+      ],
+      "id": "mem_11690c0d9797362e",
+      "keywords": [
+        "cli",
+        "core",
+        "repository",
+        "templates"
+      ],
+      "kind": "structure",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Repository Structure",
+      "source": "repository layout; src/aimem/cli.py; src/aimem/mcp/server.py",
+      "status": "active",
+      "text": "Repository layout: `src/aimem/cli.py` wires subcommands, `commands/` implements CLI commands, `core/` owns config, manifest, paths, rendering, writer, memory store, and vector database behavior, `mcp/` exposes provider-neutral memory tools, `templates/` contains generated artifacts, and `tests/` covers CLI, init, hooks, MCP, idempotency, and rendering.",
+      "updated_at": "2026-07-14T14:16:00Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:16:00Z",
+        "until": null
+      },
+      "verified_from": [
+        "src/aimem/cli.py",
+        "src/aimem/commands/init.py",
+        "src/aimem/core/memory_store.py",
+        "src/aimem/mcp/server.py"
+      ]
+    },
+    {
+      "confidence": 0.97,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_980186901c10d2e9",
+      "keywords": [
+        "guard",
+        "memory",
+        "redaction",
+        "secrets"
+      ],
+      "kind": "rule",
+      "priority": "critical",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Security",
+      "source": "README.md; .aimem/config.json; tests/test_hook_scripts.py",
+      "status": "active",
+      "text": "Never store secrets, tokens, passwords, private keys, sensitive personal data, or full conversation transcripts in memory; generated guards block secret-like writes into memory files and the recorder redacts configured secret patterns.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "README.md",
+        ".aimem/config.json",
+        "tests/test_hook_scripts.py"
+      ]
+    },
+    {
+      "confidence": 0.97,
+      "created_at": "2026-07-14T14:15:59Z",
+      "evidence": [
+        "documentation",
+        "source_code"
+      ],
+      "id": "mem_741ba6eb44a0cf14",
+      "keywords": [
+        "mcp",
+        "memory_approve",
+        "memory_propose",
+        "proposals"
+      ],
+      "kind": "workflow",
+      "priority": "critical",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Workflows",
+      "source": "README.md; src/aimem/mcp/server.py; tests/test_mcp_service.py",
+      "status": "active",
+      "text": "Durable MCP memory writes require `memory_propose` followed by `memory_approve`; proposals are local review state, approval writes Markdown plus the sidecar index, and rejection leaves memory unchanged.",
+      "updated_at": "2026-07-14T14:15:59Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-14T14:15:59Z",
+        "until": null
+      },
+      "verified_from": [
+        "README.md",
+        "src/aimem/mcp/server.py",
+        "tests/test_mcp_service.py"
+      ]
+    }
+  ],
+  "schema_version": 2
+}

@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Software Development :: Code Generators",
 ]
-dependencies = []
+dependencies = ["mcp>=1.26.0"]
 
 [project.scripts]
 aimem = "aimem.cli:main"

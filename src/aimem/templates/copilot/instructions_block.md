@@ -12,6 +12,9 @@ request first and surface unresolved conflicts.
 Never activate memory silently. When durable knowledge appears, present a memory candidate
 with scope, action, target, reason, and exact proposed content. Approval required before activation.
 Only after explicit approval, or when the user directly asks you to record memory, use:
+`memory_propose` followed by `memory_approve`. Use `memory_search`, `memory_get`,
+`memory_context`, `memory_handoff`, and `memory_conflicts` to inspect and curate memory.
+If MCP is unavailable, fall back to:
 `{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<fact>"`.
 Never store secrets, tokens, passwords, or personal data in memory. See
 `.github/instructions/aimem-memory.instructions.md` and `AGENTS.md` for the full protocol.

@@ -21,16 +21,21 @@ def test_kiro_hook_is_valid(tmp_path: Path) -> None:
     data = json.loads((root / ".kiro/hooks/aimem-memory.kiro.hook").read_text(encoding="utf-8"))
     assert data["version"] == "v1"
     triggers = {hook["trigger"] for hook in data["hooks"]}
-    assert {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostFileSave", "Stop"} <= triggers
+    assert {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostFileSave", "SessionEnd"} <= triggers
 
 
 def test_copilot_hook_is_valid(tmp_path: Path) -> None:
     root = _init(tmp_path)
     data = json.loads((root / ".github/hooks/aimem-memory.json").read_text(encoding="utf-8"))
-    assert set(data["hooks"]) >= {"SessionStart", "PreToolUse", "PostToolUse"}
+    assert set(data["hooks"]) >= {"SessionStart", "PreToolUse", "PostToolUse", "SessionEnd"}
     session = data["hooks"]["SessionStart"][0]
     assert session["type"] == "command"
     assert "windows" in session
+    assert session["windows"] == session["command"]
+    assert not session["windows"].startswith("python ")
+    session_end = data["hooks"]["SessionEnd"][0]
+    assert session_end["type"] == "command"
+    assert session_end["windows"] == session_end["command"]
 
 
 def test_copilot_instructions_have_applyto(tmp_path: Path) -> None:
@@ -170,6 +175,8 @@ def test_generated_guidance_documents_management_and_scopes(tmp_path: Path) -> N
     ):
         text = path.read_text(encoding="utf-8")
         assert "Context vs memory" in text
+        assert "memory_propose" in text
+        assert "memory_context" in text
         assert "manage_memory.py" in text
         assert "Agent memory" in text
         assert "soft-delete" in text
@@ -179,6 +186,8 @@ def test_generated_guidance_documents_management_and_scopes(tmp_path: Path) -> N
         root / ".kiro/agents/memory-curator.md",
     ):
         text = path.read_text(encoding="utf-8")
+        assert "memory_conflicts" in text
+        assert "memory_approve" in text
         assert "manage_memory.py" in text
         assert "soft-delete" in text
 
@@ -198,6 +207,7 @@ def test_config_declares_agent_scope_and_budgets(tmp_path: Path) -> None:
     assert config["scopes"]["agent"]["dir"] == ".aimem/memory/agents"
     assert config["scopes"]["agent"]["inject"] == "none"
     assert config["index"]["dir"] == ".aimem/index"
+    assert config["index"]["vector_path"] == ".aimem/index/vector.json"
     assert config["memory"]["warn_entries_per_section"] > 0
     assert config["memory"]["max_injection_chars"] > 0
     assert config["memory"]["deprecation_marker"] == "[DEPRECATED]"

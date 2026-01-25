@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import shlex
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +24,7 @@ _ACTION_SYMBOL = {
     Action.SKIPPED: ".",
     Action.BACKED_UP: "!",
 }
+_LEGACY_DEFAULT_PYTHON_COMMANDS = {"python", "python3"}
 
 
 def add_init_arguments(parser: argparse.ArgumentParser) -> None:
@@ -75,6 +78,11 @@ def add_init_arguments(parser: argparse.ArgumentParser) -> None:
         metavar="CMD",
         help="Python command embedded in generated hooks (default: python3 or existing config).",
     )
+    parser.add_argument(
+        "--no-mcp",
+        action="store_true",
+        help="Do not generate IDE MCP server configuration files.",
+    )
 
 
 def run_init(args: argparse.Namespace) -> int:
@@ -93,7 +101,9 @@ def run_init(args: argparse.Namespace) -> int:
 
     existing_config = config_mod.load_existing_config(root / paths.CONFIG_FILE)
     python_command = _resolve_python_command(args, existing_config)
+    mcp_python_command = _resolve_mcp_python_command(args, existing_config, python_command)
     variables = _variables(python_command)
+    mcp_enabled = not bool(args.no_mcp)
 
     config_doc = config_mod.build_config(
         aimem_version=__version__,
@@ -101,6 +111,7 @@ def run_init(args: argparse.Namespace) -> int:
         copilot=copilot,
         user_scope=user_scope,
         python_command=python_command,
+        mcp_enabled=mcp_enabled,
         existing=existing_config,
     )
     config_content = config_mod.dumps(config_doc)
@@ -110,6 +121,8 @@ def run_init(args: argparse.Namespace) -> int:
         variables,
         kiro=kiro,
         copilot=copilot,
+        mcp_enabled=mcp_enabled,
+        mcp_python_command=mcp_python_command,
         user_scope=user_scope,
         config_content=config_content,
     )
@@ -184,6 +197,22 @@ def _resolve_python_command(
     return "python3"
 
 
+def _resolve_mcp_python_command(
+    args: argparse.Namespace,
+    existing_config: dict[str, object] | None,
+    python_command: str,
+) -> str:
+    if args.python_command:
+        return python_command
+    if existing_config:
+        value = existing_config.get("python_command")
+        if isinstance(value, str) and value.strip():
+            command = value.strip()
+            if command not in _LEGACY_DEFAULT_PYTHON_COMMANDS:
+                return command
+    return sys.executable or python_command
+
+
 def _variables(python_command: str) -> dict[str, str]:
     return {
         "AIMEM_VERSION": __version__,
@@ -197,6 +226,45 @@ def _variables(python_command: str) -> dict[str, str]:
     }
 
 
+def _mcp_command_args(python_command: str) -> tuple[str, list[str]]:
+    command = python_command.strip()
+    executable = Path(command.strip('"')).expanduser()
+    if executable.is_file():
+        parts = [str(executable)]
+    else:
+        parts = shlex.split(command, posix=os.name != "nt")
+        if os.name == "nt":
+            parts = [part.strip('"') for part in parts]
+    if not parts:
+        parts = ["python3"]
+    return parts[0], [*parts[1:], "-m", "aimem", "mcp-server"]
+
+
+def _json(data: object) -> str:
+    return json.dumps(data, indent=2, sort_keys=True) + "\n"
+
+
+def _vscode_mcp_config(python_command: str) -> str:
+    command, args = _mcp_command_args(python_command)
+    return _json(
+        {
+            "servers": {
+                "aimem": {
+                    "type": "stdio",
+                    "command": command,
+                    "args": args,
+                    "cwd": "${workspaceFolder}",
+                }
+            }
+        }
+    )
+
+
+def _kiro_mcp_config(python_command: str) -> str:
+    command, args = _mcp_command_args(python_command)
+    return _json({"mcpServers": {"aimem": {"command": command, "args": args}}})
+
+
 def _render(relpath: str, variables: dict[str, str]) -> str:
     return rendering.substitute(load_template(relpath), variables)
 
@@ -207,12 +275,23 @@ def _build_plan(
     *,
     kiro: bool,
     copilot: bool,
+    mcp_enabled: bool,
+    mcp_python_command: str,
     user_scope: bool,
     config_content: str,
 ) -> list[PlannedFile]:
     def project(key: str, mode: WriteMode, content: str, comment_style: str = "md") -> PlannedFile:
         return PlannedFile(
             key=key, path=root / key, mode=mode, content=content, comment_style=comment_style
+        )
+
+    def json_merge(key: str, content: str, json_path: tuple[str, ...]) -> PlannedFile:
+        return PlannedFile(
+            key=key,
+            path=root / key,
+            mode=WriteMode.JSON_MERGE,
+            content=content,
+            json_path=json_path,
         )
 
     plan: list[PlannedFile] = [
@@ -261,6 +340,17 @@ def _build_plan(
     if kiro:
         plan.extend(
             [
+                *(
+                    [
+                        json_merge(
+                            paths.KIRO_MCP_CONFIG,
+                            _kiro_mcp_config(mcp_python_command),
+                            ("mcpServers", "aimem"),
+                        )
+                    ]
+                    if mcp_enabled
+                    else []
+                ),
                 project(
                     paths.KIRO_STEERING_MEMORY,
                     WriteMode.MANAGED,
@@ -302,6 +392,17 @@ def _build_plan(
     if copilot:
         plan.extend(
             [
+                *(
+                    [
+                        json_merge(
+                            paths.VSCODE_MCP_CONFIG,
+                            _vscode_mcp_config(mcp_python_command),
+                            ("servers", "aimem"),
+                        )
+                    ]
+                    if mcp_enabled
+                    else []
+                ),
                 project(
                     paths.COPILOT_INSTRUCTIONS,
                     WriteMode.SHARED,

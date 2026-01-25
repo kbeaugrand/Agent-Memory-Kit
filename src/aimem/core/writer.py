@@ -13,6 +13,7 @@ Three write modes:
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
@@ -26,6 +27,7 @@ class WriteMode(str, Enum):
     SEED = "seed"
     MANAGED = "managed"
     SHARED = "shared"
+    JSON_MERGE = "json_merge"
 
 
 class Action(str, Enum):
@@ -53,6 +55,9 @@ class PlannedFile:
 
     comment_style: str = "md"
     """Marker comment style for SHARED files: ``md`` or ``hash``."""
+
+    json_path: tuple[str, ...] = ()
+    """Object path for JSON_MERGE files, for example ``("servers", "aimem")``."""
 
 
 @dataclass(frozen=True)
@@ -117,6 +122,15 @@ def apply_file(
             planned,
             manifest_entry,
             template_version=template_version,
+            backups_root=backups_root,
+            timestamp=timestamp,
+            force=force,
+            dry_run=dry_run,
+        )
+    if planned.mode is WriteMode.JSON_MERGE:
+        return _apply_json_merge(
+            planned,
+            manifest_entry,
             backups_root=backups_root,
             timestamp=timestamp,
             force=force,
@@ -206,3 +220,91 @@ def _apply_shared(planned: PlannedFile, *, dry_run: bool) -> tuple[FileResult, s
     if not dry_run:
         _write(planned.path, merged)
     return FileResult(planned.key, action), planned.mode.value, block_hash
+
+
+def _canonical_json(value: object) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def _format_json(value: object) -> str:
+    return json.dumps(value, indent=2, sort_keys=True) + "\n"
+
+
+def _get_nested(data: Mapping[str, Any], path: tuple[str, ...]) -> object | None:
+    current: object = data
+    for key in path:
+        if not isinstance(current, Mapping) or key not in current:
+            return None
+        current = current[key]
+    return current
+
+
+def _set_nested(data: dict[str, Any], path: tuple[str, ...], value: object) -> None:
+    current = data
+    for key in path[:-1]:
+        child = current.get(key)
+        if not isinstance(child, dict):
+            child = {}
+            current[key] = child
+        current = child
+    current[path[-1]] = value
+
+
+def _apply_json_merge(
+    planned: PlannedFile,
+    manifest_entry: Mapping[str, Any] | None,
+    *,
+    backups_root: Path,
+    timestamp: str,
+    force: bool,
+    dry_run: bool,
+) -> tuple[FileResult, str, str]:
+    if not planned.json_path:
+        raise ValueError("JSON_MERGE planned files require json_path")
+
+    desired_document = json.loads(planned.content)
+    if not isinstance(desired_document, dict):
+        raise ValueError("JSON_MERGE content must be a JSON object")
+    desired_value = _get_nested(desired_document, planned.json_path)
+    if desired_value is None:
+        raise ValueError("JSON_MERGE content does not contain json_path")
+    desired_hash = rendering.sha256_text(_canonical_json(desired_value))
+
+    existing = _read(planned.path)
+    if existing is None:
+        if not dry_run:
+            _write(planned.path, _format_json(desired_document))
+        return FileResult(planned.key, Action.CREATED), planned.mode.value, desired_hash
+
+    try:
+        current_document = json.loads(existing)
+    except json.JSONDecodeError:
+        backup = None
+        if not dry_run:
+            backup = _backup(planned.path, planned.key, backups_root, timestamp)
+            _write(planned.path, _format_json(desired_document))
+        return FileResult(planned.key, Action.BACKED_UP, backup), planned.mode.value, desired_hash
+
+    if not isinstance(current_document, dict):
+        current_document = {}
+
+    current_value = _get_nested(current_document, planned.json_path)
+    if current_value == desired_value:
+        return FileResult(planned.key, Action.UNCHANGED), planned.mode.value, desired_hash
+
+    current_hash = rendering.sha256_text(_canonical_json(current_value))
+    recorded = manifest_entry.get("hash") if manifest_entry else None
+    user_modified = current_value is not None and (recorded is None or recorded != current_hash)
+
+    merged_document = dict(current_document)
+    _set_nested(merged_document, planned.json_path, desired_value)
+
+    backup = None
+    action = Action.UPDATED
+    if user_modified and not force:
+        action = Action.BACKED_UP
+        if not dry_run:
+            backup = _backup(planned.path, planned.key, backups_root, timestamp)
+    if not dry_run:
+        _write(planned.path, _format_json(merged_document))
+    return FileResult(planned.key, action, backup), planned.mode.value, desired_hash

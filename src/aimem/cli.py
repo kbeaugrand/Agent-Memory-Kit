@@ -1,9 +1,4 @@
-"""Command-line interface for aimem.
-
-The CLI intentionally exposes exactly one subcommand, ``init``. Global ``--help`` and
-``--version`` flags are supported, as is ``init --help``. Any other subcommand is
-rejected by argparse with a non-zero exit code.
-"""
+"""Command-line interface for aimem."""
 
 from __future__ import annotations
 
@@ -12,10 +7,11 @@ from collections.abc import Sequence
 
 from aimem import __version__
 from aimem.commands.init import add_init_arguments, run_init
+from aimem.commands.mcp_server import add_mcp_server_arguments, run_mcp_server
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the top-level argument parser with the single ``init`` subcommand."""
+    """Build the top-level argument parser."""
     parser = argparse.ArgumentParser(
         prog="aimem",
         description=(
@@ -32,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show the aimem version and exit.",
     )
 
-    subparsers = parser.add_subparsers(dest="command", metavar="init")
+    subparsers = parser.add_subparsers(dest="command", metavar="COMMAND")
     init_parser = subparsers.add_parser(
         "init",
         help="Initialize or update AI memory configuration in the current project.",
@@ -41,6 +37,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     add_init_arguments(init_parser)
     init_parser.set_defaults(func=run_init)
+
+    mcp_parser = subparsers.add_parser(
+        "mcp-server",
+        help="Run the aimem MCP memory server over stdio.",
+        description="Run the aimem MCP memory server over stdio.",
+        allow_abbrev=False,
+    )
+    add_mcp_server_arguments(mcp_parser)
+    mcp_parser.set_defaults(func=run_mcp_server)
 
     return parser
 

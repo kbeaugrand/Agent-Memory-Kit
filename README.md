@@ -1,105 +1,110 @@
 # aimem
 
-**Initialize or update cross-tool AI agent memory for a project.**
+**Persistent memory for AI coding agents, installed into your repository.**
 
-`aimem` is a zero-dependency Python CLI with a single job: run `aimem init` once and it
-scaffolds a complete, persistent **agent memory** system that works across
-[Kiro](https://kiro.dev) and [GitHub Copilot](https://code.visualstudio.com/docs/copilot/overview).
+`aimem` turns project knowledge into reviewable, durable agent memory for
+[GitHub Copilot](https://code.visualstudio.com/docs/copilot/overview) and
+[Kiro](https://kiro.dev). Run `aimem init` in a project and it generates the
+instructions, hooks, memory files, and helper agents needed for coding agents to reuse
+the same context across sessions and tools.
 
-After initialization, all memory behavior is implemented by the generated configuration —
-you do **not** need the `aimem` executable at runtime. You only rerun `aimem init` to
-repair or update the generated files.
+There is no runtime service and no package dependency after initialization. The generated
+files do the work; rerun `aimem init` only when you want to repair or update the managed
+configuration.
 
-## What it generates
+## Value proposition
 
-| Layer | Files |
-| --- | --- |
-| Canonical memory | `.aimem/memory/project.md` (committed), `.aimem/memory/session/current.md` (ephemeral), `.aimem/memory/agents/<agent>.md` (per-agent, committed), `~/.aimem/memory/user.md` (global) |
-| Memory metadata index | `.aimem/index/project.json` (committed support data for reviewable metadata and deterministic retrieval) |
-| Project-local hook scripts | `.aimem/hooks/*.py` — self-contained, standard-library-only Python |
-| Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/steering/product.md`, `.kiro/steering/tech.md`, `.kiro/steering/structure.md`, `.kiro/agents/memory-initializer.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
-| GitHub Copilot | `.github/copilot-instructions.md` (block), `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-initializer.agent.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
-| Cross-tool | `AGENTS.md` (block), `.gitignore` (block), `.aimem/config.json`, `.aimem/manifest.json` |
+AI coding agents are most useful when they remember the things your team already learned:
+architecture decisions, validation commands, repository conventions, common mistakes, and
+tool-specific workflow rules. Without a memory layer, that knowledge often lives in a
+chat transcript or disappears between sessions.
 
-## How memory works after init
+`aimem` gives you a governed memory system that is:
 
-- **Read** — generated hooks inject your memory into the agent's context automatically
-  (Kiro via stdout on `SessionStart` and `UserPromptSubmit`, Copilot via
-  `additionalContext` on `SessionStart`). Injected memory is size-capped with a curation
-  reminder when it grows large, and deprecated entries are excluded.
-- **Propose** — steering/instructions tell agents to identify durable memory candidates,
-  show the exact proposed entry, explain the scope and reason, and ask before activation.
-- **Write** — after explicit approval, or when you directly ask the agent to record
-  memory, agents persist entries with `record_memory.py` (add `--scope agent --agent <name>`
-  for per-agent memory). Recorded entries keep plain Markdown text with a lightweight
-  `aimem:id` comment, while complete metadata lives in `.aimem/index/`: kind, priority,
-  evidence, validation status, source, verified-from paths, confidence, validity,
-  keywords, and relationships. A `memory-initializer` agent can seed curated project
-  rules, workflows, repository structure, dependency rules, validation commands, common
-  mistakes, decisions, and diagrams during explicit initialization; a `memory-curator`
-  agent reviews, consolidates, and de-duplicates approved memory.
-- **Manage** — `manage_memory.py` lists, filters by priority/evidence/validation/source/
-  keyword/relationship, exports JSON, deletes, deprecates (a reversible soft-delete),
-  restores, or migrates individual entries, addressed by scope, section, and 1-based
-  index. Migration converts legacy plain bullets or embedded `aimem:record` comments into
-  lightweight Markdown plus sidecar metadata.
-- **Guard** — a `PreToolUse` hook blocks writing secrets into memory files.
-- **Consolidate** — a post-edit hook normalizes and de-duplicates memory files while
-  preserving deprecated (soft-deleted) entries.
+- **Portable**: one memory model works across GitHub Copilot and Kiro.
+- **Reviewable**: project memory is plain Markdown committed with the repository.
+- **Scoped**: project, session, user, and per-agent memory stay separate.
+- **Permissioned**: agents must propose durable memories and ask before activation.
+- **Safer by default**: generated guards block secrets from being written into memory.
+- **Low maintenance**: generated hook scripts are self-contained, standard-library-only
+  Python.
 
-Memory is durable, validated, reusable knowledge optimized for future coding decisions.
-Project memory is committed and shared with the team. User memory is personal and stays
-in your home directory. Session memory is temporary scratch space for the current task and
-is not durable memory. Agent memory holds durable facts specific to one agent, committed
-under `.aimem/memory/agents/` and not injected by default (set `AIMEM_ACTIVE_AGENT` or
-`scopes.agent.inject` to inject it).
+## Quick start
 
-Agents must not silently activate durable memory. A candidate should be important to
-future work, likely to remain true, reusable across future interactions, validated by the
-user or repository evidence, and self-contained enough for a future agent to act on.
+Install the CLI, initialize a project, review the generated files, and commit the shared
+memory configuration.
 
-Do not memorize secrets, credentials, tokens, private keys, sensitive personal data,
-temporary plans, task progress, work in progress, unvalidated assumptions, one-off
-implementation details, or full conversation transcripts. If explicit user instructions
-conflict with existing memory, the current request wins and the conflict should be
-surfaced instead of silently editing memory.
+```bash
+pipx install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
+cd path/to/your-project
+aimem init --both
+```
 
-## Install & run
+For a non-interactive setup, such as CI or scripted repository bootstrapping:
 
-`aimem` is a Python CLI. It can be installed from the Git repository directly — no
-publication to PyPI or npm is required.
+```bash
+aimem init --both --no-input -C path/to/your-project
+```
 
-### From Git with pipx (recommended for the CLI)
+After init, ask your coding agent to seed or update memory in normal language:
+
+```text
+Initialize project memory for this repository.
+Record this as project memory: run pytest before changing hook behavior.
+Review and curate existing memory entries.
+```
+
+## How it fits your workflow
+
+1. **Initialize once**: `aimem init` creates the memory files, tool instructions, hooks,
+   and helper agents for the selected toolchains.
+2. **Commit shared memory**: project memory and generated configuration live in the repo,
+   while session memory stays ephemeral and user memory stays in your home directory.
+3. **Let agents read context automatically**: generated hooks inject relevant memory at
+   session start and prompt time, with size caps and curation reminders.
+4. **Approve durable memory deliberately**: agents propose memory entries, explain why
+   they matter, and ask before activating them.
+5. **Curate over time**: memory can be consolidated, de-duplicated, deprecated, restored,
+   filtered, migrated, or exported by the generated management scripts.
+6. **Rerun safely**: `aimem init` is idempotent and can repair or update managed files
+   without overwriting your seed memory.
+
+## Install options
+
+`aimem` is a Python 3.10+ CLI. It can be installed directly from this Git repository; no
+PyPI or npm publication is required.
+
+### pipx, recommended
 
 ```bash
 pipx install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
 aimem init
 ```
 
-### From Git with pip
+### pip
 
 ```bash
 pip install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
 aimem init
 ```
 
-### Run once with uvx (no install)
+### uvx, no install
 
 ```bash
 uvx --from git+https://github.com/kbeaugrand/Agent-Memory-Kit.git aimem init
 ```
 
-### From Git with npx
+### npx from Git
 
-Runs the same Python CLI through a thin Node launcher. A Python 3.10+ interpreter must be on
-`PATH`; no pip install is required.
+The npm package is a thin Node launcher for the same Python CLI. Python 3.10+ must be on
+`PATH`.
 
 ```bash
 npx github:kbeaugrand/Agent-Memory-Kit init
 ```
 
-> Once the package is published, `pipx install aimem`, `pip install aimem`, and
-> `npx aimem init` will work as well.
+Once packages are published, `pipx install aimem`, `pip install aimem`, and
+`npx aimem init` will work as well.
 
 ## Usage
 
@@ -108,19 +113,115 @@ aimem --help
 aimem --version
 aimem init --help
 
-aimem init                 # interactive: choose Kiro, Copilot, or both
-aimem init --both --yes    # non-interactive: accept defaults and generate everything
-aimem init --both --no-input # non-interactive: use defaults, suitable for CI
-aimem init --kiro          # only Kiro artifacts
-aimem init --copilot       # only Copilot artifacts
-aimem init --dry-run       # preview changes without writing
-aimem init --user          # also set up global user memory in your home directory
+aimem init                         # interactive setup
+aimem init --both                  # generate Kiro and Copilot artifacts
+aimem init --kiro                  # generate only Kiro artifacts
+aimem init --copilot               # generate only Copilot artifacts
+aimem init --both --no-input       # non-interactive defaults, useful for CI
+aimem init --yes                   # accept defaults without prompting; implies both
+aimem init --user                  # also create global user memory
+aimem init --no-user               # skip global user memory
+aimem init --dry-run               # preview changes without writing
+aimem init --force                 # rewrite managed/seed files; backups are still made
+aimem init --no-mcp                # skip generated IDE MCP server config
+aimem init -C path/to/project      # initialize a specific directory
+aimem init --python-command "py -3" # command embedded in generated hooks
+aimem mcp-server -C path/to/project # run the local stdio MCP memory server
 ```
 
-Rerunning `aimem init` is safe and idempotent: aimem-owned files are reconciled, shared
-files are updated only inside clearly marked managed blocks, and your seed memory files
-are never overwritten. Any file you modified that aimem needs to rewrite is backed up
-under `.aimem/backups/` first.
+Rerunning `aimem init` is safe and idempotent. aimem-owned files are reconciled, shared
+files are updated only inside marked managed blocks, and seed memory files are preserved.
+If a managed file must be rewritten after local edits, `aimem` saves a backup under
+`.aimem/backups/` first.
+
+## Memory scopes
+
+| Scope | Location | Purpose |
+| --- | --- | --- |
+| Project | `.aimem/memory/project.md` | Durable team knowledge committed with the repository. |
+| Session | `.aimem/memory/session/current.md` | Temporary task scratch space that should not become durable memory. |
+| Agent | `.aimem/memory/agents/<agent>.md` | Durable facts for a specific agent; committed but not injected by default. |
+| User | `~/.aimem/memory/user.md` | Personal memory that follows you across projects when enabled. |
+
+Good memory candidates are stable, validated, reusable, and specific enough for a future
+agent to act on. Examples include validation commands, architecture constraints,
+dependency rules, naming conventions, release steps, repeated mistakes, and decisions.
+
+Do not memorize secrets, credentials, tokens, private keys, sensitive personal data,
+temporary plans, task progress, unvalidated assumptions, one-off implementation details,
+or full conversation transcripts. If explicit user instructions conflict with existing
+memory, the current request wins and the conflict should be surfaced.
+
+## What gets generated
+
+| Layer | Files |
+| --- | --- |
+| Canonical memory | `.aimem/memory/project.md`, `.aimem/memory/session/current.md`, `.aimem/memory/agents/<agent>.md`, `~/.aimem/memory/user.md` when enabled |
+| Memory metadata index | `.aimem/index/project.json` for reviewable metadata and deterministic retrieval |
+| Project-local hook scripts | `.aimem/hooks/*.py`, self-contained and standard-library-only |
+| MCP server config | `.vscode/mcp.json` for GitHub Copilot in VS Code, `.kiro/settings/mcp.json` for Kiro |
+| Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/steering/product.md`, `.kiro/steering/tech.md`, `.kiro/steering/structure.md`, `.kiro/agents/memory-initializer.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
+| GitHub Copilot | `.github/copilot-instructions.md` managed block, `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-initializer.agent.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
+| Cross-tool support | `AGENTS.md` managed block, `.gitignore` managed block, `.aimem/config.json`, `.aimem/manifest.json` |
+
+## MCP memory service
+
+`aimem init` adds workspace MCP configuration by default so GitHub Copilot in VS Code,
+Kiro, and custom agents can all point at the same local memory service. The generated
+server entries launch the Python environment that ran `aimem init`:
+
+```bash
+<python> -m aimem mcp-server
+```
+
+If you pass `--python-command`, that command is used for MCP as well. Existing generated
+configs that still point at bare `python` or `python3` are repaired to the current
+interpreter when you rerun `aimem init`.
+
+The MCP server uses stdio and resolves the project from `--directory`,
+`AIMEM_PROJECT_DIR`, or the current workspace. MCP mode requires the installed Python
+package and its runtime dependencies; the generated hook scripts remain stdlib-only and
+continue to work without a running server.
+
+The server exposes stable, provider-neutral tools:
+
+```text
+memory_search
+memory_get
+memory_propose
+memory_approve
+memory_reject
+memory_context
+memory_handoff
+memory_conflicts
+```
+
+Tool results use JSON envelopes with `schema_version`, `ok`, `data`, `warnings`, and a
+stable `error.code` when something fails. `memory_context` returns budgeted, explainable
+context, including the character budget used and entries omitted because of the budget.
+Durable writes stay governed: `memory_propose` creates local review state under
+`.aimem/proposals/`, and `memory_approve` is the step that activates an approved entry in
+Markdown plus the sidecar index.
+
+When the MCP server starts, it loads the current memory files into a local vector database
+at `.aimem/index/vector.json`. `memory_search` queries that local vector database with a
+deterministic sparse text vector and ranks entries by cosine similarity, then applies
+metadata filters such as scope, kind, priority, validation status, and keywords.
+
+## How memory works after init
+
+- **Read**: MCP `memory_context` and generated hooks provide memory context. Deprecated
+  entries are excluded, and context is budgeted or capped with curation reminders.
+- **Propose**: MCP `memory_propose` and generated instructions tell agents to identify
+  durable memory candidates, show the exact proposed entry, explain the scope and reason,
+  and ask before activation.
+- **Write**: approved entries are recorded as Markdown with lightweight IDs, while rich
+  metadata lives in `.aimem/index/`. With MCP, activation happens through
+  `memory_approve`.
+- **Manage**: generated scripts can list, filter, export, delete, deprecate, restore,
+  migrate, consolidate, and de-duplicate memory entries. MCP tools provide shared
+  search, get, handoff, context, and conflict inspection for IDEs and custom agents.
+- **Guard**: generated hooks block writes that look like secrets in memory files.
 
 ## Development
 
@@ -134,4 +235,4 @@ pytest
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

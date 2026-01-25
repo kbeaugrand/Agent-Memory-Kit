@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "aimem": {
+      "args": [
+        "-m",
+        "aimem",
+        "mcp-server"
+      ],
+      "command": "C:\\Users\\KevinBEAUGRAND\\sources\\CGI\\Agent-Memory-Kit\\.venv\\Scripts\\python.exe",
+      "cwd": "${workspaceFolder}",
+      "type": "stdio"
+    }
+  }
+}

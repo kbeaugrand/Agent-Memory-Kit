@@ -25,6 +25,7 @@ DEFAULT_MAX_ENTRIES_PER_SECTION = 200
 DEFAULT_WARN_ENTRIES_PER_SECTION = 50
 DEFAULT_MAX_INJECTION_CHARS = 12000
 DEFAULT_DEPRECATION_MARKER = "[DEPRECATED]"
+DEFAULT_MCP_SEARCH_LIMIT = 20
 
 
 def build_config(
@@ -34,6 +35,7 @@ def build_config(
     copilot: bool,
     user_scope: bool,
     python_command: str,
+    mcp_enabled: bool = True,
     existing: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Produce the config document, merging user-editable fields from ``existing``."""
@@ -71,6 +73,20 @@ def build_config(
     if agent_inject not in ("none", "all"):
         agent_inject = "none"
 
+    prior_mcp = prior.get("mcp", {}) if isinstance(prior.get("mcp"), dict) else {}
+    server_name = prior_mcp.get("server_name", "aimem")
+    if not isinstance(server_name, str) or not server_name.strip():
+        server_name = "aimem"
+    proposal_dir = prior_mcp.get("proposal_dir", paths.PROPOSALS_DIR)
+    if not isinstance(proposal_dir, str) or not proposal_dir.strip():
+        proposal_dir = paths.PROPOSALS_DIR
+    context_chars = prior_mcp.get("default_context_chars", max_injection)
+    if not isinstance(context_chars, int) or context_chars <= 0:
+        context_chars = max_injection
+    search_limit = prior_mcp.get("default_search_limit", DEFAULT_MCP_SEARCH_LIMIT)
+    if not isinstance(search_limit, int) or search_limit <= 0:
+        search_limit = DEFAULT_MCP_SEARCH_LIMIT
+
     return {
         "schema_version": CONFIG_SCHEMA_VERSION,
         "aimem_version": aimem_version,
@@ -86,7 +102,14 @@ def build_config(
                 "inject": agent_inject,
             },
         },
-        "index": {"dir": paths.INDEX_DIR},
+        "index": {"dir": paths.INDEX_DIR, "vector_path": paths.VECTOR_INDEX},
+        "mcp": {
+            "enabled": mcp_enabled,
+            "server_name": server_name,
+            "proposal_dir": proposal_dir,
+            "default_context_chars": context_chars,
+            "default_search_limit": search_limit,
+        },
         "memory": {
             "max_entries_per_section": max_entries,
             "warn_entries_per_section": warn_entries,

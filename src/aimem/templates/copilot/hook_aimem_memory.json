@@ -4,7 +4,7 @@
       {
         "type": "command",
         "command": "{{PYTHON_COMMAND}} .aimem/hooks/inject_memory.py --format copilot --event SessionStart",
-        "windows": "python .aimem/hooks/inject_memory.py --format copilot --event SessionStart",
+        "windows": "{{PYTHON_COMMAND}} .aimem/hooks/inject_memory.py --format copilot --event SessionStart",
         "timeout": 20
       }
     ],
@@ -12,7 +12,7 @@
       {
         "type": "command",
         "command": "{{PYTHON_COMMAND}} .aimem/hooks/guard_memory.py --mode copilot",
-        "windows": "python .aimem/hooks/guard_memory.py --mode copilot",
+        "windows": "{{PYTHON_COMMAND}} .aimem/hooks/guard_memory.py --mode copilot",
         "timeout": 15
       }
     ],
@@ -20,7 +20,15 @@
       {
         "type": "command",
         "command": "{{PYTHON_COMMAND}} .aimem/hooks/consolidate_memory.py --mode copilot",
-        "windows": "python .aimem/hooks/consolidate_memory.py --mode copilot",
+        "windows": "{{PYTHON_COMMAND}} .aimem/hooks/consolidate_memory.py --mode copilot",
+        "timeout": 20
+      }
+    ],
+    "SessionEnd": [
+      {
+        "type": "command",
+        "command": "{{PYTHON_COMMAND}} .aimem/hooks/consolidate_memory.py",
+        "windows": "{{PYTHON_COMMAND}} .aimem/hooks/consolidate_memory.py",
         "timeout": 20
       }
     ]

@@ -84,7 +84,19 @@ Approval required before activation.
 ```
 
 Only after explicit approval, or when the user directly asks you to record memory, use the
-recording script:
+MCP memory service when it is available:
+
+```
+memory_propose -> memory_approve
+memory_search | memory_get | memory_context | memory_handoff | memory_conflicts
+```
+
+`memory_context` returns budgeted, explainable context with included and omitted entries.
+`memory_propose` is non-mutating; durable memory is activated only by `memory_approve`
+after explicit approval. Tool outputs are provider-neutral JSON envelopes so GitHub
+Copilot, Kiro, and custom agents can use the same memory service.
+
+If MCP is unavailable, use the recording script:
 
 ```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py --scope <project|user|session> --topic "<Topic>" --text "<concise fact>"
@@ -105,7 +117,8 @@ through an approved memory action or the generated scripts.
 ## Managing memory
 
 Memory entries are addressable by scope, section, and 1-based index. Inspect and curate
-them with the management script instead of hand-editing:
+them with MCP tools first (`memory_search`, `memory_get`, `memory_conflicts`,
+`memory_handoff`) and with the management script as a fallback instead of hand-editing:
 
 ```
 {{PYTHON_COMMAND}} {{HOOKS_DIR}}/manage_memory.py list
