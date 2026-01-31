@@ -7,7 +7,6 @@ from pathlib import Path
 from aimem.cli import main
 
 EXPECTED = [
-    ".kiro/steering/aimem-memory.md",
     ".kiro/steering/product.md",
     ".kiro/steering/tech.md",
     ".kiro/steering/structure.md",
@@ -31,7 +30,8 @@ def test_generates_only_platform_native_files(make_project) -> None:
 
 def test_kiro_only(make_project) -> None:
     root = make_project("--kiro")
-    assert (root / ".kiro/steering/aimem-memory.md").is_file()
+    assert (root / ".kiro/steering/product.md").is_file()
+    assert not (root / ".kiro/steering/aimem-memory.md").exists()
     assert not (root / ".github").exists()
     assert not (root / ".aimem").exists()
 

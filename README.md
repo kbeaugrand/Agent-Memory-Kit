@@ -62,7 +62,7 @@ aimem init -C path/to/project      # initialize a specific directory
 
 | Toolchain | Files |
 | --- | --- |
-| Kiro | `.kiro/steering/aimem-memory.md`, `product.md`, `tech.md`, `structure.md`; `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/skills/generate-project-instructions/SKILL.md`; `.kiro/hooks/lesson-learning.kiro.hook` |
+| Kiro | `.kiro/steering/product.md`, `tech.md`, `structure.md`; `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/skills/generate-project-instructions/SKILL.md`; `.kiro/hooks/lesson-learning.kiro.hook` |
 | GitHub Copilot | `.github/copilot-instructions.md`; `.github/skills/lesson-learning/SKILL.md`, `.github/skills/generate-project-instructions/SKILL.md`; `.github/hooks/lesson-learning.json` |
 
 Kiro steering files, skills, and the detailed Copilot instruction file are seeded once and then

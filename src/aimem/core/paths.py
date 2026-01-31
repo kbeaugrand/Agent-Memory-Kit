@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 # Kiro artifacts.
-KIRO_STEERING_KNOWLEDGE = ".kiro/steering/aimem-memory.md"
 KIRO_STEERING_PRODUCT = ".kiro/steering/product.md"
 KIRO_STEERING_TECH = ".kiro/steering/tech.md"
 KIRO_STEERING_STRUCTURE = ".kiro/steering/structure.md"

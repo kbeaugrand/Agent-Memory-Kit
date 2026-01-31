@@ -113,11 +113,6 @@ def _build_plan(
         plan.extend(
             [
                 project(
-                    paths.KIRO_STEERING_KNOWLEDGE,
-                    WriteMode.SEED,
-                    _render("kiro/steering_project_knowledge.md"),
-                ),
-                project(
                     paths.KIRO_STEERING_PRODUCT,
                     WriteMode.SEED,
                     _render("kiro/steering_product.md"),

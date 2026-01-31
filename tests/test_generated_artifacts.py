@@ -9,8 +9,6 @@ from aimem.templates.loader import load_template
 NATIVE_GUIDANCE_TEMPLATES = (
     "copilot/instructions_block.md",
     "copilot/project_knowledge_block.md",
-    "kiro/steering_aimem_memory.md",
-    "kiro/steering_project_knowledge.md",
     "skills/generate_project_instructions.md",
     "skills/lesson_learning.md",
 )
@@ -27,13 +25,6 @@ UNSUPPORTED_MEMORY_ACTIONS = (
 )
 
 
-def test_native_guidance_has_platform_frontmatter(make_project) -> None:
-    root = make_project("--both")
-    kiro = (root / ".kiro/steering/aimem-memory.md").read_text(encoding="utf-8")
-
-    assert kiro.startswith("---\ninclusion: always\n---")
-
-
 def test_source_guidance_references_only_native_knowledge_actions() -> None:
     for template in NATIVE_GUIDANCE_TEMPLATES:
         guidance = load_template(template)
@@ -42,15 +33,8 @@ def test_source_guidance_references_only_native_knowledge_actions() -> None:
 
 def test_guidance_uses_native_storage_only(make_project) -> None:
     root = make_project("--both")
-    guidance = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in (
-            root / ".kiro/steering/aimem-memory.md",
-            root / ".github/copilot-instructions.md",
-        )
-    )
+    guidance = (root / ".github/copilot-instructions.md").read_text(encoding="utf-8")
 
-    assert ".kiro/steering" in guidance or "Kiro steering" in guidance
     assert ".github/instructions" in guidance
     assert ".aimem/memory" not in guidance
     assert ".aimem/index" not in guidance
@@ -59,10 +43,7 @@ def test_guidance_uses_native_storage_only(make_project) -> None:
 
 def test_guidance_uses_lesson_learning_to_maintain_knowledge(make_project) -> None:
     root = make_project("--both")
-    guidance_paths = (
-        root / ".github/copilot-instructions.md",
-        root / ".kiro/steering/aimem-memory.md",
-    )
+    guidance_paths = (root / ".github/copilot-instructions.md",)
 
     for path in guidance_paths:
         text = path.read_text(encoding="utf-8")
