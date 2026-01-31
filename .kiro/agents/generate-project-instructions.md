@@ -1,4 +1,5 @@
 ---
+name: SteeringsGenerator
 description: Analyze repository practices and generate evidence-based, scoped guidance for configured AI coding platforms.
 tools: [read, write, shell, web, context]
 ---
