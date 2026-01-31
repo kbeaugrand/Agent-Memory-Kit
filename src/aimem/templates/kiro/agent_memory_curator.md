@@ -27,7 +27,9 @@ accurate, concise, and safe to share without activating durable memory silently.
   - `{{SESSION_MEMORY}}` (ephemeral, current task)
   - `{{AGENTS_MEMORY_DIR}}/<agent>.md` (per-agent, committed)
 - Identify durable memory candidates that are validated, reusable, and likely to remain
-  true.
+  true. Recognize them opportunistically as they emerge during work — user corrections,
+  confirmed fixes, verified commands, and validated decisions — and initiate a proposal
+  rather than waiting for a formal curation pass.
 - Check for duplicates and contradictions before proposing changes.
 - Prefer updating an existing entry over creating a duplicate.
 - Present exact add, update, deprecate, or delete proposals and require explicit approval

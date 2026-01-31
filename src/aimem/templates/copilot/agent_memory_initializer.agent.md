@@ -23,9 +23,10 @@ initialize memory or when the user approves the exact entries.
   do not infer personal preferences from repository files.
 - When a fact clearly belongs to one specific agent rather than the whole team, propose it
   as agent-scoped memory (`record_memory.py --scope agent --agent <name>`).
-- For durable memory outside an explicit initialization request, present a memory
-  candidate with scope, action, target, reason, and exact proposed content; require
-  explicit approval before writing.
+- For durable memory outside an explicit initialization request, recognize the lesson as
+  it emerges — a user correction or stated rule, a confirmed fix, a verified command, or a
+  validated decision — and present a memory candidate with scope, action, target, reason,
+  and exact proposed content; require explicit approval before writing.
 - Prefer the shared MCP memory service when available: use `memory_search` and
   `memory_conflicts` before proposing, `memory_propose` for non-mutating candidates, and
   `memory_approve` only after explicit approval. Fall back to `record_memory.py` when MCP

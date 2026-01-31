@@ -62,27 +62,27 @@
       "template_version": "0.1.0"
     },
     ".github/agents/memory-curator.agent.md": {
-      "hash": "sha256:258ea893cc8f51069587c84ed96098fc4dee0173d42d7cf3d7b9aa341975d013",
+      "hash": "sha256:37ab2b5d945712aea37f110bc1cee2566dc5a72d9c2348fbe460bb2b678078b8",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/agents/memory-initializer.agent.md": {
-      "hash": "sha256:348e807be54bda1797c5d821032406fa3e8272300abcacbd34454ecb3a56ce78",
+      "hash": "sha256:9ccfdc6bc9741e04b5ed2b5c5f497b2125298ab9c0d92cabda253cfc1dcfefee",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/copilot-instructions.md": {
-      "hash": "sha256:bf69c08f450bb8772f78cf81cab3d12ff3a9d0271ce2055c809a2cb75d9b6a8f",
+      "hash": "sha256:db35ac50c081767cdcbb6c8b66526b2529ecb7f023ccf46ed3e925ec02e973de",
       "mode": "shared",
       "template_version": "0.1.0"
     },
     ".github/hooks/aimem-memory.json": {
-      "hash": "sha256:46af5afb84ef0c7ee99a113fc7a751d559ebc86bd992c78c4330e94eb344cbd1",
+      "hash": "sha256:6d1c6a94dc281bfa0bd4632413d760f952b2cffc74afe7ee2ede68eefed8a1ec",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/instructions/aimem-memory.instructions.md": {
-      "hash": "sha256:dd67c8680daee3ccc8e199646a5c0c0fbd1364e9aa6df1eb3995df782742ab2f",
+      "hash": "sha256:e358d0deaca30b84e69f86bfb51b81e9d486dcbe22446c2961ffebb17be03959",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -92,17 +92,17 @@
       "template_version": "0.1.0"
     },
     ".kiro/agents/memory-curator.md": {
-      "hash": "sha256:c463b66846cf2570aca1fc16116e8c88c81e86b5b0182989f3de9209f82e435d",
+      "hash": "sha256:c02c049791570eae1238e4854f31c99c1f82c60a448a924d885111b1cfa75bb4",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".kiro/agents/memory-initializer.md": {
-      "hash": "sha256:98c837fc01be2da71d2060cf36e8f1935466dadabc9d3538756e6875b650bde6",
+      "hash": "sha256:21deb412e4ab804dd253fca8fcfd28d578fddd6196ca9e17d2fde9f515556dee",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".kiro/hooks/aimem-memory.kiro.hook": {
-      "hash": "sha256:29124edcd66db961c9d897098e93a6c49165d1e22817ac460b17fb8ad9fee51f",
+      "hash": "sha256:7e6b459a82d6eebfb79f921481b6a933b9edd7370031ece4c73ef2ac3009c289",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -112,7 +112,7 @@
       "template_version": "0.1.0"
     },
     ".kiro/steering/aimem-memory.md": {
-      "hash": "sha256:c84c914ce1505bc2f0f5cad4c83abb578078c3c1f9e0f9354c026ad58a799e21",
+      "hash": "sha256:33c5fa3bba245523574c73d7dedde3615fa7778f431dc23dd021e2c2749e2481",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -137,11 +137,11 @@
       "template_version": "0.1.0"
     },
     "AGENTS.md": {
-      "hash": "sha256:1beaef69f91c804ac2b692824ed9a43d79a47cc5f5ef84231aa152b1c53868de",
+      "hash": "sha256:21a49eb97be4631cccb683d912f9ab677d3da782743cf6a7fb492d2e82f4c3fe",
       "mode": "shared",
       "template_version": "0.1.0"
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-07-14T14:07:22Z"
+  "updated_at": "2026-07-19T08:36:13Z"
 }

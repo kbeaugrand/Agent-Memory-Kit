@@ -61,6 +61,26 @@ temporary plans, task progress, work in progress, unvalidated assumptions, one-o
 implementation details, full conversation transcripts, or information already represented
 clearly in code, tests, ADRs, or authoritative documentation.
 
+## Recognizing durable lessons
+
+Recognizing a durable lesson and initiating a proposal is your responsibility, not the
+hooks'. Hooks only manage the memory lifecycle — they inject memory at session start, guard
+against secret writes, and consolidate files after changes — and never author memory on
+their own. As you work, watch for the moment a reusable lesson emerges and pause to
+consider a proposal when, and only when, it is validated:
+
+- The user states a durable preference, rule, or convention, or corrects your approach.
+- You confirm a non-obvious root cause or fix after debugging.
+- You verify a build, test, or validation command or workflow that future agents will
+  reuse.
+- You identify and confirm a recurring mistake, gotcha, or constraint.
+- A design or architectural decision, or a dependency direction, is made and validated.
+- A domain term or naming convention is clarified.
+
+Recognize only validated, reusable lessons. Never propose from unvalidated assumptions,
+work in progress, or task progress; implementation progress must not silently become
+durable memory, so keep it in session notes or nowhere until it is confirmed.
+
 ## Recording memory
 
 Never activate memory silently. When a durable candidate appears, determine the correct
