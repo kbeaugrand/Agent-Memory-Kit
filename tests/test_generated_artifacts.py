@@ -6,7 +6,6 @@ import json
 
 from aimem.templates.loader import load_template
 
-
 NATIVE_GUIDANCE_TEMPLATES = (
     "copilot/aimem_memory.instructions.md",
     "copilot/instructions_block.md",
@@ -118,9 +117,7 @@ def test_lesson_learning_scopes_knowledge_to_effective_targets(make_project) -> 
 def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
     root = make_project("--both")
     kiro = json.loads((root / ".kiro/hooks/lesson-learning.json").read_text(encoding="utf-8"))
-    copilot = json.loads(
-        (root / ".github/hooks/lesson-learning.json").read_text(encoding="utf-8")
-    )
+    copilot = json.loads((root / ".github/hooks/lesson-learning.json").read_text(encoding="utf-8"))
 
     kiro_hook = kiro["hooks"][0]
     assert kiro_hook["trigger"] == "Stop"
