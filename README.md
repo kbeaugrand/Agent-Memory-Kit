@@ -179,6 +179,11 @@ temporary plans, task progress, unvalidated assumptions, one-off implementation 
 or full conversation transcripts. If explicit user instructions conflict with existing
 memory, the current request wins and the conflict should be surfaced.
 
+Run `/generate-project-instructions` to analyze established repository practices and create
+corresponding, scoped GitHub Copilot instructions and Kiro steering files. The workflow uses
+repository evidence, preserves existing user-owned guidance, and applies each platform's native
+frontmatter and inclusion rules.
+
 ## What gets generated
 
 | Layer | Files |
@@ -187,8 +192,8 @@ memory, the current request wins and the conflict should be surfaced.
 | Memory metadata index | `.aimem/index/project.json` for reviewable metadata and deterministic retrieval |
 | Project-local hook scripts | `.aimem/hooks/*.py`, self-contained and standard-library-only |
 | MCP server config | `.vscode/mcp.json` for GitHub Copilot in VS Code, `.kiro/settings/mcp.json` for Kiro |
-| Kiro | `.kiro/steering/aimem-memory.md`, seed steering files, memory agents, `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
-| GitHub Copilot | `.github/copilot-instructions.md` managed block, `.github/instructions/aimem-memory.instructions.md`, memory agents, `.github/skills/lesson-learning/SKILL.md`, `.github/hooks/aimem-memory.json` |
+| Kiro | `.kiro/steering/aimem-memory.md`, seed steering files, memory agents, lesson-learning and instruction-generation skills and prompts, `.kiro/hooks/aimem-memory.kiro.hook` |
+| GitHub Copilot | `.github/copilot-instructions.md` managed block, `.github/instructions/aimem-memory.instructions.md`, memory agents, lesson-learning and instruction-generation skills and prompts, `.github/hooks/aimem-memory.json` |
 | Cross-tool support | `AGENTS.md` managed block, `.gitignore` managed block, `.aimem/config.json`, `.aimem/manifest.json` |
 
 The Stop review consumes an additional model turn. Copilot uses a small runtime state file

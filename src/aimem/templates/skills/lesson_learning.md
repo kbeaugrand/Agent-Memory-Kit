@@ -20,10 +20,17 @@ persist a hook transcript file.
    inspect first, call `memory_propose`, then call `memory_approve`. If MCP is unavailable,
    use `{{PYTHON_COMMAND}} {{HOOKS_DIR}}/record_memory.py` with evidence, validation status,
    source, keywords, and confidence metadata.
-4. Decide whether the lesson is also a prescriptive coding rule. If it is, update the most
-   appropriate existing user-owned Copilot instruction or Kiro steering file. Create a
-   focused file only when no existing owner fits. Use narrow `applyTo` globs or file-match
-   metadata for scoped rules and global inclusion only for genuinely global rules.
+4. Decide whether the lesson is also a prescriptive coding rule. If it is, determine the
+   exact file types and repository paths to which each rule applies. Partition rules with
+   different applicability into separate instruction or steering files; keep rules together
+   only when they share a coherent concern and file scope. Update the most appropriate
+   existing user-owned Copilot instruction or Kiro steering file, splitting it when necessary,
+   and create a focused file only when no existing owner fits. Prefer the narrowest accurate
+   path-and-extension `applyTo` glob or Kiro file-match metadata, using multiple patterns for
+   genuinely disjoint file sets. Use repository-wide extension globs only for rules applying
+   to that file type throughout the repository. Reserve `applyTo: "**"` or Kiro
+   `inclusion: always` for rules applying to every file; never broaden a pattern merely to
+   keep unrelated rules in one file.
 5. Make minimal edits and preserve unrelated guidance. If no durable lesson emerged, do
    nothing.
 

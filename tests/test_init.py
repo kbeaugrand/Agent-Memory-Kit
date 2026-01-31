@@ -32,12 +32,16 @@ EXPECTED = [
     ".kiro/agents/memory-curator.md",
     ".kiro/hooks/aimem-memory.kiro.hook",
     ".kiro/skills/lesson-learning/SKILL.md",
+    ".kiro/skills/generate-project-instructions/SKILL.md",
+    ".kiro/prompts/generate-project-instructions.md",
     ".github/copilot-instructions.md",
     ".github/instructions/aimem-memory.instructions.md",
     ".github/agents/memory-initializer.agent.md",
     ".github/agents/memory-curator.agent.md",
     ".github/hooks/aimem-memory.json",
     ".github/skills/lesson-learning/SKILL.md",
+    ".github/skills/generate-project-instructions/SKILL.md",
+    ".github/prompts/generate-project-instructions.prompt.md",
 ]
 
 

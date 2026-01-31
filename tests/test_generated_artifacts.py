@@ -72,6 +72,11 @@ def test_lesson_learning_skills_are_valid_and_managed_safely(tmp_path: Path) -> 
         assert "memory_propose" in text
         assert "memory_approve" in text
         assert "coding rule" in text
+        assert "Partition rules with" in text
+        assert "narrowest accurate" in text
+        assert "using multiple patterns" in text
+        assert 'Reserve `applyTo: "**"`' in text
+        assert "rules applying to every file" in text
         assert "Never edit aimem-managed files" in text
         assert ".github/instructions/aimem-memory.instructions.md" in text
         assert ".kiro/steering/aimem-memory.md" in text
@@ -90,6 +95,37 @@ def test_lesson_learning_prompts_invoke_the_shared_skill(tmp_path: Path) -> None
         assert "Invoke the `lesson-learning` skill now" in text
         assert "Follow the skill's procedure and boundaries exactly" in text
         assert "If no durable lesson emerged, make no changes" in text
+
+
+def test_generate_project_instruction_prompts_use_current_platform_rules(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    skill_paths = [
+        root / ".github/skills/generate-project-instructions/SKILL.md",
+        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    ]
+    for path in skill_paths:
+        text = path.read_text(encoding="utf-8")
+        assert text.startswith("---\nname: generate-project-instructions\n")
+        assert "user-invocable: false" in text
+        assert ".github/instructions/<concern>.instructions.md" in text
+        assert ".kiro/steering/<concern>.md" in text
+        assert 'applyTo: "**"' in text
+        assert "inclusion: fileMatch" in text
+        assert "fileMatchPattern:" in text
+        assert "inclusion: always" in text
+        assert "inclusion: auto" in text
+        assert "Never edit aimem-managed files" in text
+
+    prompt_paths = [
+        root / ".github/prompts/generate-project-instructions.prompt.md",
+        root / ".kiro/prompts/generate-project-instructions.md",
+    ]
+    for path in prompt_paths:
+        text = path.read_text(encoding="utf-8")
+        assert text.startswith("---\nname: generate-project-instructions\n")
+        assert "description:" in text
+        assert "Invoke the `generate-project-instructions` skill" in text
+        assert "practices supported by the repository" in text
 
 
 def test_copilot_instructions_have_applyto(tmp_path: Path) -> None:
