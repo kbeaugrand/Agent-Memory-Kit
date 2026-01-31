@@ -77,7 +77,9 @@ def test_no_unresolved_template_tokens(tmp_path: Path) -> None:
             assert "{{" not in text, path
 
 
-def test_generated_instructions_require_memory_approval(tmp_path: Path) -> None:
+def test_generated_instructions_automatically_record_validated_project_lessons(
+    tmp_path: Path,
+) -> None:
     root = _init(tmp_path)
     files = [
         root / ".github/instructions/aimem-memory.instructions.md",
@@ -88,19 +90,29 @@ def test_generated_instructions_require_memory_approval(tmp_path: Path) -> None:
 
     for path in files:
         text = path.read_text(encoding="utf-8")
-        assert "Never activate memory silently" in text
-        assert "Approval required before activation" in text
+        lower_text = text.lower()
+        assert "automatically" in text
+        assert "project memory" in text
+        assert "duplicates" in text
+        assert "explicit" in lower_text
+        assert "approval" in lower_text
+        assert "user memory" in text
+        assert "uncertain claims" in text
+        assert "deprecat" in text
+        assert "delet" in text
         assert "secrets" in text
+        assert "full conversation transcripts" in text
 
     detailed = (root / ".github/instructions/aimem-memory.instructions.md").read_text(
         encoding="utf-8"
     )
     assert "Memory candidate detected." in detailed
     assert "Scope: PROJECT | USER | SESSION" in detailed
-    assert "full conversation transcripts" in detailed
+    assert "Activation: AUTOMATIC_PROJECT | APPROVAL_REQUIRED" in detailed
+    assert "call `memory_propose`, and then call `memory_approve`" in detailed
 
 
-def test_memory_agents_require_approval_before_durable_writes(tmp_path: Path) -> None:
+def test_memory_agents_apply_automatic_project_memory_boundaries(tmp_path: Path) -> None:
     root = _init(tmp_path)
     files = [
         root / ".github/agents/memory-curator.agent.md",
@@ -111,7 +123,14 @@ def test_memory_agents_require_approval_before_durable_writes(tmp_path: Path) ->
 
     for path in files:
         text = path.read_text(encoding="utf-8")
+        assert "automatically" in text
+        assert "validated project" in text
+        assert "memory_propose" in text
+        assert "memory_approve" in text
         assert "explicit approval" in text
+        assert "user memory" in text
+        assert "uncertain claims" in text
+        assert "deprecations or deletions" in text
         assert "full conversation transcripts" in text
         assert "Never store secrets" in text
 
@@ -157,7 +176,9 @@ def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) 
     session = (root / ".aimem/memory/session/current.md").read_text(encoding="utf-8")
     user = (home / ".aimem/memory/user.md").read_text(encoding="utf-8")
 
-    assert "explicit approval" in project
+    assert "RECORD here automatically" in project
+    assert "successful check validates" in project
+    assert "duplicates and contradictions" in project
     assert "temporary plans" in project
     assert "## Dependency Rules" in project
     assert "## Repository Structure" in project
@@ -168,8 +189,12 @@ def test_memory_seed_files_define_scope_boundaries(tmp_path: Path, monkeypatch) 
     assert "aimem:id" in project
     assert ".aimem/index/project.json" in project
     assert "Session memory is not durable memory" in session
-    assert "present it as a PROJECT or USER memory candidate" in session
+    assert "automatically promote it to PROJECT memory" in session
+    assert "Keep uncertain" in session
+    assert "findings here" in session
     assert "cross-project preferences" in user
+    assert "only after explicit approval" in user
+    assert "Never infer or automatically activate user memory" in user
     assert "project-specific facts" in user
 
 

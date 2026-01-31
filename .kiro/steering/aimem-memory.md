@@ -63,13 +63,14 @@ clearly in code, tests, ADRs, or authoritative documentation.
 
 ## Recognizing durable lessons
 
-Recognizing a durable lesson and initiating a proposal is your responsibility, not the
-hooks'. Hooks only manage the memory lifecycle — they inject memory at session start and on
-each prompt, guard against secret writes, and consolidate files after changes — and never
-author memory on their own. As you work, watch for the moment a reusable lesson emerges and
-pause to consider a proposal when, and only when, it is validated:
+Recognizing and recording durable lessons is your responsibility, not the hooks'. Hooks
+only manage the memory lifecycle — they inject memory at session start and on each prompt,
+guard against secret writes, and consolidate files after changes — and never author memory
+on their own. As you work, watch for reusable lessons and review the completed session
+before your final response. Automatically record a lesson in project memory when it is
+validated by repository evidence or a successful check and captures:
 
-- The user states a durable preference, rule, or convention, or corrects your approach.
+- The user corrects a repository rule, convention, or problem-solving approach.
 - You confirm a non-obvious root cause or fix after debugging.
 - You verify a build, test, or validation command or workflow that future agents will
   reuse.
@@ -77,15 +78,22 @@ pause to consider a proposal when, and only when, it is validated:
 - A design or architectural decision, or a dependency direction, is made and validated.
 - A domain term or naming convention is clarified.
 
-Recognize only validated, reusable lessons. Never propose from unvalidated assumptions,
-work in progress, or task progress; implementation progress must not silently become
-durable memory, so keep it in session notes or nowhere until it is confirmed.
+Recognize only validated, reusable lessons. Never promote unvalidated assumptions, work
+in progress, or task progress; keep them in session notes or nowhere until confirmed.
+Do not duplicate facts already represented clearly in code, tests, ADRs, or authoritative
+documentation.
 
 ## Recording memory
 
-Never activate memory silently. When a durable candidate appears, determine the correct
-scope, check for duplicates or contradictions, prefer updating an existing entry over
-creating a duplicate, and present the exact proposed entry for approval.
+For validated repository problem-solving lessons, use project scope by default. Check for
+duplicates and contradictions, prefer updating an existing entry over creating a
+duplicate, then activate the concise, actionable add or update without interrupting the
+user. Report automatically activated memories in your final response.
+
+Explicit approval is still required before recording user memory, inferred preferences,
+uncertain claims, or changes outside this automatic category. Also require approval before
+deprecating or deleting active memory. Never automatically record secrets, personal data,
+full conversation transcripts, temporary plans, or one-off implementation details.
 
 Use this format:
 
@@ -100,11 +108,12 @@ Reason: <why this will help future interactions>
 Proposed memory:
 <exact content>
 
-Approval required before activation.
+Activation: AUTOMATIC_PROJECT | APPROVAL_REQUIRED
 ```
 
-Only after explicit approval, or when the user directly asks you to record memory, use the
-MCP memory service when it is available:
+Use the MCP memory service when it is available. For an automatically validated project
+lesson, inspect existing memory, call `memory_propose`, and then call `memory_approve`
+yourself. For approval-required changes, stop after the proposal until the user approves:
 
 ```
 memory_propose -> memory_approve
@@ -112,9 +121,10 @@ memory_search | memory_get | memory_context | memory_handoff | memory_conflicts
 ```
 
 `memory_context` returns budgeted, explainable context with included and omitted entries.
-`memory_propose` is non-mutating; durable memory is activated only by `memory_approve`
-after explicit approval. Tool outputs are provider-neutral JSON envelopes so Kiro, GitHub
-Copilot, and custom agents can use the same memory service.
+`memory_propose` is non-mutating; durable memory is activated only by `memory_approve`,
+which the agent may call automatically only for the validated project lessons defined
+above. Tool outputs are provider-neutral JSON envelopes so Kiro, GitHub Copilot, and
+custom agents can use the same memory service.
 
 If MCP is unavailable, use the recording script:
 
@@ -132,7 +142,7 @@ When initializing memory, read the installed template at `.aimem/memory/TEMPLATE
 memory according to its section guide and field definitions.
 
 Never edit generated assistant projection files directly. Change canonical memory files
-through an approved memory action or the generated scripts.
+through the governed MCP flow or the generated scripts.
 
 ## Managing memory
 
@@ -160,7 +170,7 @@ sidecar metadata without changing visible text. Record agent-specific facts with
 
 Never store secrets, tokens, passwords, or personal data in memory. A `PreToolUse` guard
 blocks obvious secret writes, and a post-save hook normalizes and de-duplicates memory,
-but approval and careful review are still required. Keep memory safe to commit and share.
+but careful review is still required. Keep memory safe to commit and share.
 
 ## Curation
 

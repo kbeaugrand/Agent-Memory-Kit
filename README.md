@@ -24,7 +24,8 @@ chat transcript or disappears between sessions.
 - **Portable**: one memory model works across GitHub Copilot and Kiro.
 - **Reviewable**: project memory is plain Markdown committed with the repository.
 - **Scoped**: project, session, user, and per-agent memory stay separate.
-- **Permissioned**: agents must propose durable memories and ask before activation.
+- **Governed**: validated project lessons can be activated automatically through an
+  auditable proposal flow; sensitive or uncertain changes still require approval.
 - **Safer by default**: generated guards block secrets from being written into memory.
 - **Low maintenance**: generated hook scripts are self-contained, standard-library-only
   Python.
@@ -67,8 +68,8 @@ Review and curate existing memory entries.
    while session memory stays ephemeral and user memory stays in your home directory.
 3. **Let agents read context automatically**: generated hooks inject relevant memory at
    session start and prompt time, with size caps and curation reminders.
-4. **Approve durable memory deliberately**: agents propose memory entries, explain why
-   they matter, and ask before activating them.
+4. **Learn from completed work**: agents automatically preserve validated, reusable
+  repository problem-solving lessons after checking for duplicates and conflicts.
 5. **Curate over time**: memory can be consolidated, de-duplicated, deprecated, restored,
    filtered, migrated, or exported by the generated management scripts.
 6. **Rerun safely**: `aimem init` is idempotent and can repair or update managed files
@@ -162,6 +163,17 @@ Good memory candidates are stable, validated, reusable, and specific enough for 
 agent to act on. Examples include validation commands, architecture constraints,
 dependency rules, naming conventions, release steps, repeated mistakes, and decisions.
 
+During a session, the active coding agent watches for confirmed root causes and fixes,
+reusable diagnostic workflows, verified commands, recurring constraints, and corrected
+repository rules. Before finishing, it reviews the work and can automatically add or update
+concise project memory when repository evidence or a successful check validates the lesson.
+This behavior comes from the generated agent instructions; hooks do not summarize sessions
+or author memory in the background.
+
+Automatic activation is limited to validated project-memory adds and updates. User memory,
+inferred preferences, uncertain claims, and deprecations or deletions still require explicit
+approval. Weak or incomplete findings stay in session memory until validated.
+
 Do not memorize secrets, credentials, tokens, private keys, sensitive personal data,
 temporary plans, task progress, unvalidated assumptions, one-off implementation details,
 or full conversation transcripts. If explicit user instructions conflict with existing
@@ -222,8 +234,10 @@ Tool results use JSON envelopes with `schema_version`, `ok`, `data`, `warnings`,
 stable `error.code` when something fails. `memory_context` returns budgeted, explainable
 context, including the character budget used and entries omitted because of the budget.
 Durable writes stay governed: `memory_propose` creates local review state under
-`.aimem/proposals/`, and `memory_approve` is the step that activates an approved entry in
-Markdown plus the sidecar index.
+`.aimem/proposals/`, and `memory_approve` activates an entry in Markdown plus the sidecar
+index. For a validated project lesson, the agent may call both tools consecutively and
+report the activation in its final response. Approval-gated categories stop after the
+proposal until the user approves them.
 
 When the MCP server starts, it loads the current memory files into a local vector database
 at `.aimem/index/vector.json`. `memory_search` queries that local vector database with a
@@ -234,12 +248,12 @@ metadata filters such as scope, kind, priority, validation status, and keywords.
 
 - **Read**: MCP `memory_context` and generated hooks provide memory context. Deprecated
   entries are excluded, and context is budgeted or capped with curation reminders.
-- **Propose**: MCP `memory_propose` and generated instructions tell agents to identify
-  durable memory candidates, show the exact proposed entry, explain the scope and reason,
-  and ask before activation.
-- **Write**: approved entries are recorded as Markdown with lightweight IDs, while rich
-  metadata lives in `.aimem/index/`. With MCP, activation happens through
-  `memory_approve`.
+- **Propose**: MCP `memory_propose` records the exact candidate, scope, and reason before
+  any durable activation.
+- **Write**: for validated project lessons, generated instructions direct the active agent
+  to call `memory_approve` automatically after duplicate and conflict checks. Other durable
+  changes wait for explicit approval. Activated entries use lightweight Markdown IDs while
+  rich metadata lives in `.aimem/index/`.
 - **Manage**: generated scripts can list, filter, export, delete, deprecate, restore,
   migrate, consolidate, and de-duplicate memory entries. MCP tools provide shared
   search, get, handoff, context, and conflict inspection for IDEs and custom agents.

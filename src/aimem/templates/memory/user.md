@@ -8,6 +8,7 @@ any repository.
 RECORD here only after explicit approval or direct user instruction: stable personal
 coding preferences, tool preferences, review style, communication preferences, and other
 reusable user-level context that should apply across projects.
+Never infer or automatically activate user memory from repository work or session behavior.
 DO NOT record: project-specific facts (use project memory), secrets, credentials,
 sensitive personal data, temporary plans, task progress, unvalidated assumptions, full
 conversation transcripts, or anything the user would not want reused across projects.

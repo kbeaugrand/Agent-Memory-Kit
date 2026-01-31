@@ -62,17 +62,17 @@
       "template_version": "0.1.0"
     },
     ".github/agents/memory-curator.agent.md": {
-      "hash": "sha256:37ab2b5d945712aea37f110bc1cee2566dc5a72d9c2348fbe460bb2b678078b8",
+      "hash": "sha256:3866e8d7afa9d1afe3bb57ec1bc94bde15f265060e7b90a1e197e5a7a52f6bc0",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/agents/memory-initializer.agent.md": {
-      "hash": "sha256:9ccfdc6bc9741e04b5ed2b5c5f497b2125298ab9c0d92cabda253cfc1dcfefee",
+      "hash": "sha256:63a4d338b6955b5510fe30189e28ed3e4b254f2d92f12a132147583e587399f0",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/copilot-instructions.md": {
-      "hash": "sha256:db35ac50c081767cdcbb6c8b66526b2529ecb7f023ccf46ed3e925ec02e973de",
+      "hash": "sha256:659a359be8a1ece95e1d2a6dad764637ccbf2bd65ceacb8787af7df16fc48543",
       "mode": "shared",
       "template_version": "0.1.0"
     },
@@ -82,7 +82,7 @@
       "template_version": "0.1.0"
     },
     ".github/instructions/aimem-memory.instructions.md": {
-      "hash": "sha256:e358d0deaca30b84e69f86bfb51b81e9d486dcbe22446c2961ffebb17be03959",
+      "hash": "sha256:41ded77d8163c03ed07a682028f0ced42b819ccd7935988c702adfb570e99e0b",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -92,12 +92,12 @@
       "template_version": "0.1.0"
     },
     ".kiro/agents/memory-curator.md": {
-      "hash": "sha256:c02c049791570eae1238e4854f31c99c1f82c60a448a924d885111b1cfa75bb4",
+      "hash": "sha256:a61204b8382661484b43694d028348a60194a832efd53f08ab83c9cf67baa368",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".kiro/agents/memory-initializer.md": {
-      "hash": "sha256:21deb412e4ab804dd253fca8fcfd28d578fddd6196ca9e17d2fde9f515556dee",
+      "hash": "sha256:78933dfe57a4992c98389ac3c69367b6599c5b43069fb88e1811c84fc46dca02",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -112,7 +112,7 @@
       "template_version": "0.1.0"
     },
     ".kiro/steering/aimem-memory.md": {
-      "hash": "sha256:33c5fa3bba245523574c73d7dedde3615fa7778f431dc23dd021e2c2749e2481",
+      "hash": "sha256:5f6b35eff659651b809b8f55f5c91a71697b6462170a3d433949166e765f6905",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -137,11 +137,11 @@
       "template_version": "0.1.0"
     },
     "AGENTS.md": {
-      "hash": "sha256:21a49eb97be4631cccb683d912f9ab677d3da782743cf6a7fb492d2e82f4c3fe",
+      "hash": "sha256:8265f9dba8fca3998f4b64bc87c17680f97e1b4c3ffb3e215a9879d585268ca5",
       "mode": "shared",
       "template_version": "0.1.0"
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-07-19T08:36:13Z"
+  "updated_at": "2026-07-19T10:11:41Z"
 }

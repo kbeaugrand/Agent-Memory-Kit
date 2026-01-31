@@ -6,9 +6,11 @@ Use this scratchpad for working notes, current goals, and intermediate findings 
 only relevant to the task in progress.
 
 Session memory is not durable memory. When a session note appears useful beyond the
-current task, present it as a PROJECT or USER memory candidate and require explicit
-approval before activation. Do not store secrets, credentials, sensitive personal data, or
-full conversation transcripts here. This header comment is stripped before injection.
+current task, automatically promote it to PROJECT memory only after repository evidence or
+a successful check validates it as a reusable problem-solving lesson. Keep uncertain
+findings here; require explicit approval before recording USER memory or any other durable
+claim. Do not store secrets, credentials, sensitive personal data, or full conversation
+transcripts here. This header comment is stripped before injection.
 
 Entries are readable Markdown bullets with lightweight `aimem:id` comments. Full
 metadata lives in `.aimem/index/`. Prefer the generated record/manage scripts and the

@@ -89,7 +89,13 @@ This header comment is stripped before injection, so it costs no context tokens.
   Verified from: README.md, pyproject.toml
   Keywords: mypy, pytest, ruff, validation
   <!-- aimem:id=mem_db956484b28ba3eb -->
-
+- ⭐ High Workflow: Run repository regeneration with `.\.venv\Scripts\python.exe -m aimem init --both --no-input`; using a different Python interpreter rewrites the generated MCP command paths and creates unrelated configuration churn.
+  Evidence: ✓ Source Code
+  Validation: Verified
+  Source: validated init workflow
+  Verified from: .vscode/mcp.json
+  Keywords: aimem, mcp, venv
+  <!-- aimem:id=mem_41ca63af5ae886ef -->
 ## Testing
 
 ## Deployment

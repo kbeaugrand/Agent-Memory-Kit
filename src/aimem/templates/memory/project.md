@@ -5,10 +5,12 @@ Canonical PROJECT memory for AI software development agents. Commit this Markdow
 with the repository. It is the human-readable source of truth; complete machine metadata
 lives in `.aimem/index/project.json`.
 
-RECORD here only after explicit approval or direct user instruction: durable repository
-facts, architecture rules, conventions, workflows, validation commands, dependency rules,
-known limitations, domain language, and project-specific mistakes that help a future
-agent write correct code.
+RECORD here automatically when repository evidence or a successful check validates a
+reusable problem-solving lesson, or after explicit approval or direct user instruction.
+Eligible content includes durable repository facts, root causes and fixes, diagnostic
+workflows, validation commands, architecture rules, conventions, dependency rules, known
+limitations, domain language, and project-specific mistakes that help a future agent write
+correct code. Check for duplicates and contradictions before adding or updating an entry.
 DO NOT record: secrets, tokens, passwords, personal data, temporary plans, task progress,
 work in progress, unvalidated assumptions, one-off implementation details, full
 conversation transcripts, or facts that do not improve future coding decisions.

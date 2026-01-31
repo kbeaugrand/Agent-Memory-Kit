@@ -95,10 +95,13 @@ Convert legacy bullets or embedded `aimem:record` comments without changing visi
 ## Fill Rules
 
 - Inspect source code, tests, manifests, README files, ADRs, and existing instructions before writing project memory.
+- Review the completed session for reusable root causes, fixes, diagnostic workflows, verified commands, recurring constraints, and corrected repository rules.
+- Automatically add or update project memory only when repository evidence or a successful check validates the lesson; check for duplicates and contradictions first.
+- Require explicit approval for user memory, inferred preferences, uncertain claims, and deprecations or deletions.
 - Prefer rules, workflows, dependency directions, validation commands, extension checklists, common mistakes, and project-specific patterns over broad descriptions.
 - Keep immutable facts, conventions, recommendations, decisions, and workflows as distinct memory types.
 - Generate Mermaid diagrams only when the repository contains enough evidence to avoid invention.
 - Prefer updating or deprecating existing entries over adding duplicates.
 - Keep each entry short enough to scan quickly.
 - Do not record secrets, credentials, personal data, transient plans, unvalidated assumptions, full conversation transcripts, or facts already obvious from nearby source code.
-- If evidence is weak, record a session note or ask for approval instead of creating durable project or user memory.
+- If evidence is weak, record a session note instead of creating durable project memory; ask for approval before creating user memory.
