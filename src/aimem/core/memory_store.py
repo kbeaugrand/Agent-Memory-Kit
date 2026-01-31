@@ -271,8 +271,7 @@ def _parsed_entries(
         record = index_records.get(record_id or "")
         deprecated = visible.lstrip().startswith("[DEPRECATED]")
         if record and (
-            record.get("status") == "deprecated"
-            or record.get("validation_status") == "deprecated"
+            record.get("status") == "deprecated" or record.get("validation_status") == "deprecated"
         ):
             deprecated = True
         entries.append(
@@ -678,7 +677,7 @@ class MemoryStore:
             str(item["id"]): float(item["similarity"])
             for item in self.vector_db.search(vector_query, limit=None)
         }
-        rows: list[tuple[tuple[float, int, int, str, int], dict[str, Any]]] = []
+        rows: list[tuple[tuple[float, int, int, int, str, int], dict[str, Any]]] = []
         for entry in self.entries(scope=scope, agent=agent, include_deprecated=include_deprecated):
             record = entry.record or {}
             entry_id = entry.id or f"{entry.target}:{entry.section}:{entry.index}"
@@ -851,9 +850,10 @@ class MemoryStore:
             raise MemoryStoreError(
                 "PROPOSAL_INVALID", f"Proposal '{proposal_id}' is invalid JSON"
             ) from exc
-        if not isinstance(proposal, dict) or proposal.get(
-            "schema_version"
-        ) != PROPOSAL_SCHEMA_VERSION:
+        if (
+            not isinstance(proposal, dict)
+            or proposal.get("schema_version") != PROPOSAL_SCHEMA_VERSION
+        ):
             raise MemoryStoreError(
                 "PROPOSAL_INVALID", f"Proposal '{proposal_id}' has invalid schema"
             )
@@ -994,8 +994,7 @@ class MemoryStore:
                         "type": "duplicate_text",
                         "entries": [entry.to_dict() for entry in group],
                         "explanation": (
-                            "Entries have the same normalized text in the same scope and "
-                            "section."
+                            "Entries have the same normalized text in the same scope and section."
                         ),
                     }
                 )

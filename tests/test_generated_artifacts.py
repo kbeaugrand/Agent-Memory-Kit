@@ -21,7 +21,13 @@ def test_kiro_hook_is_valid(tmp_path: Path) -> None:
     data = json.loads((root / ".kiro/hooks/aimem-memory.kiro.hook").read_text(encoding="utf-8"))
     assert data["version"] == "v1"
     triggers = {hook["trigger"] for hook in data["hooks"]}
-    assert {"SessionStart", "UserPromptSubmit", "PreToolUse", "PostFileSave", "SessionEnd"} <= triggers
+    assert {
+        "SessionStart",
+        "UserPromptSubmit",
+        "PreToolUse",
+        "PostFileSave",
+        "SessionEnd",
+    } <= triggers
 
 
 def test_copilot_hook_is_valid(tmp_path: Path) -> None:

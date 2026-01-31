@@ -224,4 +224,4 @@ def create_app(directory: str | None = None) -> Any:
 def run_server(*, directory: str | None = None, transport: str = "stdio") -> None:
     """Run the aimem MCP server."""
     app = create_app(directory)
-    app.run(transport=transport)  # type: ignore[arg-type]
+    app.run(transport=transport)
