@@ -116,14 +116,16 @@ def test_lesson_learning_scopes_knowledge_to_effective_targets(make_project) -> 
 
 def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
     root = make_project("--both")
-    kiro = json.loads((root / ".kiro/hooks/lesson-learning.json").read_text(encoding="utf-8"))
+    kiro = json.loads(
+        (root / ".kiro/hooks/lesson-learning.kiro.hook").read_text(encoding="utf-8")
+    )
     copilot = json.loads((root / ".github/hooks/lesson-learning.json").read_text(encoding="utf-8"))
 
-    kiro_hook = kiro["hooks"][0]
-    assert kiro_hook["trigger"] == "Stop"
-    assert kiro_hook["action"]["type"] == "agent"
-    assert "Apply" in kiro_hook["action"]["prompt"]
-    assert "lesson-learning" in kiro_hook["action"]["prompt"]
+    assert kiro["enabled"] is True
+    assert kiro["version"] == "1"
+    assert kiro["when"]["type"] == "agentStop"
+    assert kiro["then"]["type"] == "askAgent"
+    assert "lesson-learning" in kiro["then"]["prompt"]
 
     copilot_hook = copilot["hooks"]["Stop"][0]
     assert copilot_hook["type"] == "command"

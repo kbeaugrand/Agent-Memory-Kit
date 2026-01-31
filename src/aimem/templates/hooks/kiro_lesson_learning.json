@@ -1,15 +1,13 @@
 {
-  "version": "v1",
-  "hooks": [
-    {
-      "name": "lesson-learning-on-stop",
-      "description": "Extract durable lessons before the agent finishes its turn.",
-      "trigger": "Stop",
-      "action": {
-        "type": "agent",
-        "prompt": "Apply the lesson-learning skill to the completed work. Record only validated, reusable lessons; if no durable lesson emerged, make no changes."
-      },
-      "enabled": true
-    }
-  ]
+  "enabled": true,
+  "name": "Extract Lessons on Turn End",
+  "description": "Runs when an agent execution completes and uses the lesson-learning skill to extract durable lessons from the work just done and record them in project instructions or steering.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Use the lesson-learning skill to extract durable, validated lessons from the work completed in this turn. Scope each lesson appropriately (by file glob or target) and record it in the project's native instructions or steering files. Only capture lessons that are genuinely reusable; skip trivial or one-off details."
+  }
 }

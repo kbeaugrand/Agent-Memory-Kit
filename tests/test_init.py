@@ -13,7 +13,7 @@ EXPECTED = [
     ".kiro/steering/structure.md",
     ".kiro/skills/lesson-learning/SKILL.md",
     ".kiro/skills/generate-project-instructions/SKILL.md",
-    ".kiro/hooks/lesson-learning.json",
+    ".kiro/hooks/lesson-learning.kiro.hook",
     ".github/copilot-instructions.md",
     ".github/instructions/aimem-memory.instructions.md",
     ".github/skills/lesson-learning/SKILL.md",
