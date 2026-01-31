@@ -91,6 +91,11 @@
       "mode": "managed",
       "template_version": "0.1.0"
     },
+    ".github/prompts/lesson-learning.prompt.md": {
+      "hash": "sha256:2bd3e4729248a64072773310b094eccac920a10b71208608aab1a949a18bf0ee",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
     ".github/skills/lesson-learning/SKILL.md": {
       "hash": "sha256:ce119960452770c72dd66be7a1ec61c825c8e2d24805d3edabb997b3824249b8",
       "mode": "managed",
@@ -113,6 +118,11 @@
     },
     ".kiro/hooks/aimem-memory.kiro.hook": {
       "hash": "sha256:3b5930dfc0257cc49adc7dadb0ec2a41e1698f2b7460c0f015bf950aa3f4ba48",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".kiro/prompts/lesson-learning.md": {
+      "hash": "sha256:b06dc60d0e621f2d656497f62fd23543646bda89fea8b7f13c7aea17e52b574e",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -158,5 +168,5 @@
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-07-19T13:44:20Z"
+  "updated_at": "2026-07-19T16:06:02Z"
 }

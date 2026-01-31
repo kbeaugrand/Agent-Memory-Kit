@@ -47,6 +47,7 @@ KIRO_AGENT_INITIALIZER = ".kiro/agents/memory-initializer.md"
 KIRO_AGENT_CURATOR = ".kiro/agents/memory-curator.md"
 KIRO_HOOK = ".kiro/hooks/aimem-memory.kiro.hook"
 KIRO_SKILL_LESSON_LEARNING = ".kiro/skills/lesson-learning/SKILL.md"
+KIRO_PROMPT_LESSON_LEARNING = ".kiro/prompts/lesson-learning.md"
 
 # GitHub Copilot artifacts.
 VSCODE_MCP_CONFIG = ".vscode/mcp.json"
@@ -56,6 +57,7 @@ COPILOT_AGENT_INITIALIZER = ".github/agents/memory-initializer.agent.md"
 COPILOT_AGENT_CURATOR = ".github/agents/memory-curator.agent.md"
 COPILOT_HOOK = ".github/hooks/aimem-memory.json"
 COPILOT_SKILL_LESSON_LEARNING = ".github/skills/lesson-learning/SKILL.md"
+COPILOT_PROMPT_LESSON_LEARNING = ".github/prompts/lesson-learning.prompt.md"
 
 # Cross-tool, shared files (managed via marker blocks).
 AGENTS_FILE = "AGENTS.md"

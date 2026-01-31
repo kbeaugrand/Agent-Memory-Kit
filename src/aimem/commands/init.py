@@ -359,6 +359,11 @@ def _build_plan(
                     WriteMode.MANAGED,
                     _render("skills/lesson_learning.md", variables),
                 ),
+                project(
+                    paths.KIRO_PROMPT_LESSON_LEARNING,
+                    WriteMode.MANAGED,
+                    _render("kiro/lesson_learning.md", variables),
+                ),
             ]
         )
 
@@ -405,6 +410,11 @@ def _build_plan(
                     paths.COPILOT_SKILL_LESSON_LEARNING,
                     WriteMode.MANAGED,
                     _render("skills/lesson_learning.md", variables),
+                ),
+                project(
+                    paths.COPILOT_PROMPT_LESSON_LEARNING,
+                    WriteMode.MANAGED,
+                    _render("copilot/lesson_learning.prompt.md", variables),
                 ),
             ]
         )

@@ -77,6 +77,21 @@ def test_lesson_learning_skills_are_valid_and_managed_safely(tmp_path: Path) -> 
         assert ".kiro/steering/aimem-memory.md" in text
 
 
+def test_lesson_learning_prompts_invoke_the_shared_skill(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    prompts = [
+        root / ".github/prompts/lesson-learning.prompt.md",
+        root / ".kiro/prompts/lesson-learning.md",
+    ]
+    for path in prompts:
+        text = path.read_text(encoding="utf-8")
+        assert text.startswith("---\nname: lesson-learning\n")
+        assert "description:" in text
+        assert "Invoke the `lesson-learning` skill now" in text
+        assert "Follow the skill's procedure and boundaries exactly" in text
+        assert "If no durable lesson emerged, make no changes" in text
+
+
 def test_copilot_instructions_have_applyto(tmp_path: Path) -> None:
     root = _init(tmp_path)
     text = (root / ".github/instructions/aimem-memory.instructions.md").read_text(encoding="utf-8")
