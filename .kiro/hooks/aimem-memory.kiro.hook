@@ -47,12 +47,12 @@
       "enabled": true
     },
     {
-      "name": "aimem-persist-memory",
-      "description": "Remind the agent to persist durable memories before finishing.",
-      "trigger": "SessionEnd",
+      "name": "aimem-learn-session",
+      "description": "Extract durable lessons and project coding rules after an agent turn.",
+      "trigger": "Stop",
       "action": {
         "type": "agent",
-        "prompt": "Review this session. If any durable, non-secret rules, decisions, conventions, validation commands, workflows, common mistakes, or domain facts emerged, record them to the appropriate memory scope using .aimem/hooks/record_memory.py with priority, evidence, validation status, source, and keywords (project for team-shared repo facts, user for personal cross-project preferences, session for ephemeral notes). Never store secrets. If nothing durable emerged, do nothing."
+        "prompt": "Invoke the lesson-learning skill for the completed conversation now. Extract high-confidence durable lessons, update memory, and create or update user-owned coding instructions or Kiro steering when a lesson is also a prescriptive coding rule. If nothing durable emerged, make no changes."
       },
       "timeout": 60,
       "enabled": true

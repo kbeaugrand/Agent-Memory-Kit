@@ -24,12 +24,26 @@
         "timeout": 20
       }
     ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/learn_session.py",
+        "windows": "python3 .aimem/hooks/learn_session.py",
+        "timeout": 20
+      }
+    ],
     "SessionEnd": [
       {
         "type": "command",
         "command": "python3 .aimem/hooks/consolidate_memory.py",
         "windows": "python3 .aimem/hooks/consolidate_memory.py",
         "timeout": 20
+      },
+      {
+        "type": "command",
+        "command": "python3 .aimem/hooks/learn_session.py --cleanup",
+        "windows": "python3 .aimem/hooks/learn_session.py --cleanup",
+        "timeout": 10
       }
     ]
   }

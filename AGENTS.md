@@ -11,12 +11,14 @@ conflicts.
 - **User memory** — `~/.aimem/memory/user.md` (personal, cross-project).
 - **Session memory** — `.aimem/memory/session/current.md` (ephemeral, not committed).
 
-Recognize reusable repository problem-solving lessons as they emerge and review the session
-before your final response. When a lesson is validated by repository evidence or a
-successful check, automatically add or update concise project memory after checking for
-duplicates and conflicts. Use the governed flow and report the activation in your final
-response; hooks manage lifecycle and security but do not author memory. Require explicit
-approval for user memory, inferred preferences, uncertain claims, and deprecations or
+Recognize reusable repository problem-solving lessons as they emerge. A Stop hook invokes
+the `lesson-learning` skill for one review turn; hook scripts do not parse transcripts or
+author memory themselves. Automatically add or update concise project memory for a
+high-confidence lesson supported by an explicit user correction or decision, repeated
+confirmed behavior, a successful check, or strong repository evidence, after checking for
+duplicates and conflicts. When the lesson is also a coding rule, update an appropriate
+user-owned instruction or steering file, never an aimem-managed artifact. Require explicit
+approval for user memory, personal preferences, uncertain claims, and deprecations or
 deletions. Use:
 
 ```

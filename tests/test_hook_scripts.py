@@ -13,6 +13,7 @@ HOOKS = [
     "consolidate_memory.py",
     "guard_memory.py",
     "manage_memory.py",
+    "learn_session.py",
 ]
 
 
@@ -251,6 +252,60 @@ def test_consolidate_deduplicates(make_project, run_hook) -> None:
     text = project_memory.read_text(encoding="utf-8")
     assert text.count("- a") == 1
     assert "- b" in text
+
+
+def test_learn_session_blocks_once_then_allows_learning_stop(make_project, run_hook) -> None:
+    root = make_project("--both")
+    transcript = root / "transcript.jsonl"
+    transcript.write_text("first turn\n", encoding="utf-8")
+    payload = json.dumps(
+        {"session_id": "session-1", "transcript_path": str(transcript), "hook_event_name": "Stop"}
+    )
+
+    first = run_hook(root, "learn_session.py", stdin=payload)
+    assert json.loads(first.stdout)["decision"] == "block"
+
+    transcript.write_text("first turn\nlearning turn\n", encoding="utf-8")
+    second = run_hook(root, "learn_session.py", stdin=payload)
+    assert json.loads(second.stdout) == {}
+    duplicate = run_hook(root, "learn_session.py", stdin=payload)
+    assert json.loads(duplicate.stdout) == {}
+
+
+def test_learn_session_retriggers_after_later_turn(make_project, run_hook) -> None:
+    root = make_project("--both")
+    transcript = root / "transcript.jsonl"
+    transcript.write_text("turn one\n", encoding="utf-8")
+    payload = json.dumps({"session_id": "session-1", "transcript_path": str(transcript)})
+    run_hook(root, "learn_session.py", stdin=payload)
+    transcript.write_text("turn one\nlearning\n", encoding="utf-8")
+    run_hook(root, "learn_session.py", stdin=payload)
+
+    transcript.write_text("turn one\nlearning\nturn two\n", encoding="utf-8")
+    result = run_hook(root, "learn_session.py", stdin=payload)
+    assert json.loads(result.stdout)["decision"] == "block"
+
+
+def test_learn_session_fails_open_and_cleans_up(make_project, run_hook) -> None:
+    root = make_project("--both")
+    for payload in (
+        "not-json",
+        "{}",
+        json.dumps({"session_id": "x", "transcript_path": "missing"}),
+    ):
+        result = run_hook(root, "learn_session.py", stdin=payload)
+        assert result.returncode == 0
+        assert json.loads(result.stdout) == {}
+
+    transcript = root / "transcript.jsonl"
+    transcript.write_text("turn\n", encoding="utf-8")
+    payload = json.dumps({"session_id": "session-1", "transcript_path": str(transcript)})
+    run_hook(root, "learn_session.py", stdin=payload)
+    state = root / ".aimem/runtime/lesson-learning.json"
+    assert state.is_file()
+    cleanup = run_hook(root, "learn_session.py", "--cleanup")
+    assert cleanup.returncode == 0
+    assert not state.exists()
 
 
 def test_manage_migrate_converts_legacy_markdown(make_project, run_hook) -> None:

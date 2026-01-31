@@ -10,12 +10,15 @@ request first and surface unresolved conflicts.
 - **User memory** — `~/.aimem/memory/user.md` (personal, cross-project).
 - **Session memory** — `.aimem/memory/session/current.md` (ephemeral, not committed).
 
-Recognize reusable repository problem-solving lessons as they emerge and review the session
-before your final response. When a lesson is validated by repository evidence or a
-successful check, automatically add or update concise project memory after checking for
-duplicates and conflicts. Use `memory_propose` followed by `memory_approve`, and report the
-activation in your final response; hooks manage lifecycle and security but do not author
-memory. Require explicit approval for user memory, inferred preferences, uncertain claims,
+Recognize reusable repository problem-solving lessons as they emerge. A Stop hook invokes
+the `lesson-learning` skill for one review turn; hook scripts do not parse transcripts or
+author memory themselves. Automatically add or update concise project memory for a
+high-confidence lesson supported by an explicit user correction or decision, repeated
+confirmed behavior, a successful check, or strong repository evidence, after checking for
+duplicates and conflicts. When the lesson is also a coding rule, update an appropriate
+user-owned instruction or steering file, never an aimem-managed artifact. Use
+`memory_propose` followed by `memory_approve`, and report the activation in your final
+response. Require explicit approval for user memory, personal preferences, uncertain claims,
 and deprecations or deletions. Use `memory_search`, `memory_get`, `memory_context`,
 `memory_handoff`, and `memory_conflicts` to inspect and curate memory.
 If MCP is unavailable, fall back to:

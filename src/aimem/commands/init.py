@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shlex
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,7 +23,6 @@ _ACTION_SYMBOL = {
     Action.SKIPPED: ".",
     Action.BACKED_UP: "!",
 }
-_LEGACY_DEFAULT_PYTHON_COMMANDS = {"python", "python3"}
 
 
 def add_init_arguments(parser: argparse.ArgumentParser) -> None:
@@ -101,7 +99,6 @@ def run_init(args: argparse.Namespace) -> int:
 
     existing_config = config_mod.load_existing_config(root / paths.CONFIG_FILE)
     python_command = _resolve_python_command(args, existing_config)
-    mcp_python_command = _resolve_mcp_python_command(args, existing_config, python_command)
     variables = _variables(python_command)
     mcp_enabled = not bool(args.no_mcp)
 
@@ -122,7 +119,6 @@ def run_init(args: argparse.Namespace) -> int:
         kiro=kiro,
         copilot=copilot,
         mcp_enabled=mcp_enabled,
-        mcp_python_command=mcp_python_command,
         user_scope=user_scope,
         config_content=config_content,
     )
@@ -197,22 +193,6 @@ def _resolve_python_command(
     return "python3"
 
 
-def _resolve_mcp_python_command(
-    args: argparse.Namespace,
-    existing_config: dict[str, object] | None,
-    python_command: str,
-) -> str:
-    if args.python_command:
-        return python_command
-    if existing_config:
-        value = existing_config.get("python_command")
-        if isinstance(value, str) and value.strip():
-            command = value.strip()
-            if command not in _LEGACY_DEFAULT_PYTHON_COMMANDS:
-                return command
-    return sys.executable or python_command
-
-
 def _variables(python_command: str) -> dict[str, str]:
     return {
         "AIMEM_VERSION": __version__,
@@ -226,33 +206,18 @@ def _variables(python_command: str) -> dict[str, str]:
     }
 
 
-def _mcp_command_args(python_command: str) -> tuple[str, list[str]]:
-    command = python_command.strip()
-    executable = Path(command.strip('"')).expanduser()
-    if executable.is_file():
-        parts = [str(executable)]
-    else:
-        parts = shlex.split(command, posix=os.name != "nt")
-        if os.name == "nt":
-            parts = [part.strip('"') for part in parts]
-    if not parts:
-        parts = ["python3"]
-    return parts[0], [*parts[1:], "-m", "aimem", "mcp-server"]
-
-
 def _json(data: object) -> str:
     return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
 
-def _vscode_mcp_config(python_command: str) -> str:
-    command, args = _mcp_command_args(python_command)
+def _vscode_mcp_config() -> str:
     return _json(
         {
             "servers": {
                 "aimem": {
                     "type": "stdio",
-                    "command": command,
-                    "args": args,
+                    "command": "aimem",
+                    "args": ["mcp-server"],
                     "cwd": "${workspaceFolder}",
                 }
             }
@@ -260,9 +225,8 @@ def _vscode_mcp_config(python_command: str) -> str:
     )
 
 
-def _kiro_mcp_config(python_command: str) -> str:
-    command, args = _mcp_command_args(python_command)
-    return _json({"mcpServers": {"aimem": {"command": command, "args": args}}})
+def _kiro_mcp_config() -> str:
+    return _json({"mcpServers": {"aimem": {"command": "aimem", "args": ["mcp-server"]}}})
 
 
 def _render(relpath: str, variables: dict[str, str]) -> str:
@@ -276,7 +240,6 @@ def _build_plan(
     kiro: bool,
     copilot: bool,
     mcp_enabled: bool,
-    mcp_python_command: str,
     user_scope: bool,
     config_content: str,
 ) -> list[PlannedFile]:
@@ -306,6 +269,11 @@ def _build_plan(
         ),
         project(paths.HOOK_GUARD, WriteMode.MANAGED, _render("hooks/guard_memory.py", variables)),
         project(paths.HOOK_MANAGE, WriteMode.MANAGED, _render("hooks/manage_memory.py", variables)),
+        project(
+            paths.HOOK_LEARN_SESSION,
+            WriteMode.MANAGED,
+            _render("hooks/learn_session.py", variables),
+        ),
         project(paths.PROJECT_INDEX, WriteMode.SEED, _render("index/project.json", variables)),
         project(paths.MEMORY_TEMPLATE, WriteMode.SEED, _render("memory/TEMPLATE.md", variables)),
         project(paths.PROJECT_MEMORY, WriteMode.SEED, _render("memory/project.md", variables)),
@@ -344,7 +312,7 @@ def _build_plan(
                     [
                         json_merge(
                             paths.KIRO_MCP_CONFIG,
-                            _kiro_mcp_config(mcp_python_command),
+                            _kiro_mcp_config(),
                             ("mcpServers", "aimem"),
                         )
                     ]
@@ -386,6 +354,11 @@ def _build_plan(
                     WriteMode.MANAGED,
                     _render("kiro/hook_aimem_memory.kiro.hook", variables),
                 ),
+                project(
+                    paths.KIRO_SKILL_LESSON_LEARNING,
+                    WriteMode.MANAGED,
+                    _render("skills/lesson_learning.md", variables),
+                ),
             ]
         )
 
@@ -396,7 +369,7 @@ def _build_plan(
                     [
                         json_merge(
                             paths.VSCODE_MCP_CONFIG,
-                            _vscode_mcp_config(mcp_python_command),
+                            _vscode_mcp_config(),
                             ("servers", "aimem"),
                         )
                     ]
@@ -427,6 +400,11 @@ def _build_plan(
                     paths.COPILOT_HOOK,
                     WriteMode.MANAGED,
                     _render("copilot/hook_aimem_memory.json", variables),
+                ),
+                project(
+                    paths.COPILOT_SKILL_LESSON_LEARNING,
+                    WriteMode.MANAGED,
+                    _render("skills/lesson_learning.md", variables),
                 ),
             ]
         )

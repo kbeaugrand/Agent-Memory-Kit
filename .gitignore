@@ -37,4 +37,5 @@ node_modules/
 .aimem/index/vector.json
 .aimem/proposals/
 .aimem/backups/
+.aimem/runtime/
 # AIMEM:END

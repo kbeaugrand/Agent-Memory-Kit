@@ -63,12 +63,13 @@ clearly in code, tests, ADRs, or authoritative documentation.
 
 ## Recognizing durable lessons
 
-Recognizing and recording durable lessons is your responsibility, not the hooks'. Hooks
-only manage the memory lifecycle — they inject memory at session start, guard against
-secret writes, and consolidate files after changes — and never author memory on their
-own. As you work, watch for reusable lessons and review the completed session before your
-final response. Automatically record a lesson in project memory when it is validated by
-repository evidence or a successful check and captures:
+Recognizing and recording durable lessons is the agent's responsibility. Hooks manage the
+memory lifecycle and use the `lesson-learning` skill to request one review turn after a
+completed agent turn; hook scripts do not parse transcripts or author memory themselves.
+As you work, watch for reusable lessons and review the completed session before your final
+response. Automatically record a high-confidence lesson in project memory when it is
+supported by an explicit user correction or decision, repeated confirmed behavior, a
+successful check, or strong consistency with repository evidence and captures:
 
 - The user corrects a repository rule, convention, or problem-solving approach.
 - You confirm a non-obvious root cause or fix after debugging.
@@ -83,9 +84,14 @@ in progress, or task progress; keep them in session notes or nowhere until confi
 Do not duplicate facts already represented clearly in code, tests, ADRs, or authoritative
 documentation.
 
+When a high-confidence lesson is also a prescriptive coding rule, update the most
+appropriate user-owned Copilot instruction or Kiro steering file, or create a focused one
+when no existing owner fits. Never edit aimem-managed instructions, steering, hooks,
+agents, or skills; `aimem init` replaces those files.
+
 ## Recording memory
 
-For validated repository problem-solving lessons, use project scope by default. Check for
+For high-confidence repository problem-solving lessons, use project scope by default. Check for
 duplicates and contradictions, prefer updating an existing entry over creating a
 duplicate, then activate the concise, actionable add or update without interrupting the
 user. Report automatically activated memories in your final response.

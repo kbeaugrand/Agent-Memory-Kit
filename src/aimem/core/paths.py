@@ -35,6 +35,7 @@ HOOK_RECORD = ".aimem/hooks/record_memory.py"
 HOOK_CONSOLIDATE = ".aimem/hooks/consolidate_memory.py"
 HOOK_GUARD = ".aimem/hooks/guard_memory.py"
 HOOK_MANAGE = ".aimem/hooks/manage_memory.py"
+HOOK_LEARN_SESSION = ".aimem/hooks/learn_session.py"
 
 # Kiro artifacts.
 KIRO_MCP_CONFIG = ".kiro/settings/mcp.json"
@@ -45,6 +46,7 @@ KIRO_STEERING_STRUCTURE = ".kiro/steering/structure.md"
 KIRO_AGENT_INITIALIZER = ".kiro/agents/memory-initializer.md"
 KIRO_AGENT_CURATOR = ".kiro/agents/memory-curator.md"
 KIRO_HOOK = ".kiro/hooks/aimem-memory.kiro.hook"
+KIRO_SKILL_LESSON_LEARNING = ".kiro/skills/lesson-learning/SKILL.md"
 
 # GitHub Copilot artifacts.
 VSCODE_MCP_CONFIG = ".vscode/mcp.json"
@@ -53,6 +55,7 @@ COPILOT_MEMORY_INSTRUCTIONS = ".github/instructions/aimem-memory.instructions.md
 COPILOT_AGENT_INITIALIZER = ".github/agents/memory-initializer.agent.md"
 COPILOT_AGENT_CURATOR = ".github/agents/memory-curator.agent.md"
 COPILOT_HOOK = ".github/hooks/aimem-memory.json"
+COPILOT_SKILL_LESSON_LEARNING = ".github/skills/lesson-learning/SKILL.md"
 
 # Cross-tool, shared files (managed via marker blocks).
 AGENTS_FILE = "AGENTS.md"

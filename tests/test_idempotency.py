@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
 from pathlib import Path
 
 from aimem.cli import main
@@ -77,6 +76,28 @@ def test_shared_block_preserves_surrounding(tmp_path: Path) -> None:
     assert "AIMEM:BEGIN" in updated
 
 
+def test_user_owned_coding_rules_survive_rerun(tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    root.mkdir()
+    _init(root, "--both")
+
+    copilot_rules = root / ".github/instructions/python-rules.instructions.md"
+    kiro_rules = root / ".kiro/steering/python-rules.md"
+    copilot_rules.write_text(
+        '---\napplyTo: "**/*.py"\n---\n\nRun focused tests after Python edits.\n',
+        encoding="utf-8",
+    )
+    kiro_rules.write_text(
+        "---\ninclusion: fileMatch\nfileMatchPattern: '**/*.py'\n---\n\n"
+        "Run focused tests after Python edits.\n",
+        encoding="utf-8",
+    )
+
+    before = {path: path.read_text(encoding="utf-8") for path in (copilot_rules, kiro_rules)}
+    _init(root, "--both")
+    assert {path: path.read_text(encoding="utf-8") for path in before} == before
+
+
 def test_mcp_config_merge_preserves_other_servers(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
@@ -97,4 +118,9 @@ def test_mcp_config_merge_preserves_other_servers(tmp_path: Path) -> None:
     data = json.loads(config_path.read_text(encoding="utf-8"))
     assert data["inputs"] == [{"id": "token", "type": "promptString"}]
     assert data["servers"]["otherServer"] == {"command": "other", "args": []}
-    assert data["servers"]["aimem"]["command"] == sys.executable
+    assert data["servers"]["aimem"] == {
+        "args": ["mcp-server"],
+        "command": "aimem",
+        "cwd": "${workspaceFolder}",
+        "type": "stdio",
+    }

@@ -32,19 +32,17 @@ chat transcript or disappears between sessions.
 
 ## Quick start
 
-Initialize the project with `npx`, then install the Python package that provides the local
-MCP server referenced by the generated IDE configuration:
+Install aimem globally, then initialize the project:
 
 ```bash
 cd path/to/your-project
-npx github:kbeaugrand/Agent-Memory-Kit init --both
 python -m pip install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
+npx github:kbeaugrand/Agent-Memory-Kit init --both
 ```
 
-Python 3.10+ must be available on `PATH`. Run the `pip` command with the same Python
-environment that `npx` discovers so `<python> -m aimem mcp-server` remains available after
-the one-shot `npx` process exits. If you do not want MCP integration, initialize with
-`--no-mcp` and skip the `pip` installation.
+Python 3.10+ and the globally installed `aimem` command must be available on `PATH`. The
+generated IDE configuration starts the MCP server with `aimem mcp-server`. If you do not
+want MCP integration, initialize with `--no-mcp` and skip the `pip` installation.
 
 For a non-interactive setup, such as CI or scripted repository bootstrapping:
 
@@ -165,14 +163,16 @@ dependency rules, naming conventions, release steps, repeated mistakes, and deci
 
 During a session, the active coding agent watches for confirmed root causes and fixes,
 reusable diagnostic workflows, verified commands, recurring constraints, and corrected
-repository rules. Before finishing, it reviews the work and can automatically add or update
-concise project memory when repository evidence or a successful check validates the lesson.
-This behavior comes from the generated agent instructions; hooks do not summarize sessions
-or author memory in the background.
+repository rules. After a completed agent turn, the generated `Stop` hook requests one
+review turn using the `lesson-learning` skill. The skill can automatically add or update
+concise project memory for high-confidence lessons and can update user-owned Copilot
+instructions or Kiro steering when a lesson is also a coding rule. Hook scripts do not
+parse or persist transcripts and do not author memory themselves.
 
-Automatic activation is limited to validated project-memory adds and updates. User memory,
-inferred preferences, uncertain claims, and deprecations or deletions still require explicit
-approval. Weak or incomplete findings stay in session memory until validated.
+High confidence requires an explicit user correction or decision, repeated confirmed
+behavior, a successful validation, or strong consistency with repository evidence. User
+memory, personal preferences, uncertain claims, and deprecations or deletions still require
+explicit approval. Weak or incomplete findings stay in session memory until validated.
 
 Do not memorize secrets, credentials, tokens, private keys, sensitive personal data,
 temporary plans, task progress, unvalidated assumptions, one-off implementation details,
@@ -187,9 +187,14 @@ memory, the current request wins and the conflict should be surfaced.
 | Memory metadata index | `.aimem/index/project.json` for reviewable metadata and deterministic retrieval |
 | Project-local hook scripts | `.aimem/hooks/*.py`, self-contained and standard-library-only |
 | MCP server config | `.vscode/mcp.json` for GitHub Copilot in VS Code, `.kiro/settings/mcp.json` for Kiro |
-| Kiro | `.kiro/steering/aimem-memory.md`, `.kiro/steering/product.md`, `.kiro/steering/tech.md`, `.kiro/steering/structure.md`, `.kiro/agents/memory-initializer.md`, `.kiro/agents/memory-curator.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
-| GitHub Copilot | `.github/copilot-instructions.md` managed block, `.github/instructions/aimem-memory.instructions.md`, `.github/agents/memory-initializer.agent.md`, `.github/agents/memory-curator.agent.md`, `.github/hooks/aimem-memory.json` |
+| Kiro | `.kiro/steering/aimem-memory.md`, seed steering files, memory agents, `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/hooks/aimem-memory.kiro.hook` |
+| GitHub Copilot | `.github/copilot-instructions.md` managed block, `.github/instructions/aimem-memory.instructions.md`, memory agents, `.github/skills/lesson-learning/SKILL.md`, `.github/hooks/aimem-memory.json` |
 | Cross-tool support | `AGENTS.md` managed block, `.gitignore` managed block, `.aimem/config.json`, `.aimem/manifest.json` |
+
+The Stop review consumes an additional model turn. Copilot uses a small runtime state file
+under `.aimem/runtime/` to prevent recursion; failures are fail-open so lesson learning
+cannot prevent a session from ending. Copilot's transcript path is used only as opaque event
+identity because its file format is not a stable API.
 
 ## MCP memory service
 

@@ -18,6 +18,10 @@ accurate, concise, and safe while automatically preserving validated project les
   true. Recognize them opportunistically and review the completed session for confirmed
   fixes, verified commands, reusable diagnostics, recurring constraints, and corrected
   repository rules.
+- Treat explicit user corrections or decisions, repeated confirmed behavior, successful
+  checks, and strong repository evidence as high-confidence project lessons. When such a
+  lesson is also a coding rule, update an appropriate user-owned instruction or steering
+  file without modifying aimem-managed artifacts.
 - Check for duplicates and contradictions before proposing changes.
 - Prefer updating an existing entry over creating a duplicate.
 - Automatically activate exact project-memory adds or updates backed by repository evidence

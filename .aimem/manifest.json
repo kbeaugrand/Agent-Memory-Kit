@@ -26,6 +26,11 @@
       "mode": "managed",
       "template_version": "0.1.0"
     },
+    ".aimem/hooks/learn_session.py": {
+      "hash": "sha256:5b2af02b583a9d8d3482da7588f2c59f79d099587583cc7e2de5078a00dbd80e",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
     ".aimem/hooks/manage_memory.py": {
       "hash": "sha256:4acca79f6f24d17c4fdae9d09db8585f5386b92720bbcd514aa7942ed5f1a8f0",
       "mode": "managed",
@@ -62,7 +67,7 @@
       "template_version": "0.1.0"
     },
     ".github/agents/memory-curator.agent.md": {
-      "hash": "sha256:3866e8d7afa9d1afe3bb57ec1bc94bde15f265060e7b90a1e197e5a7a52f6bc0",
+      "hash": "sha256:e765d452ef0dff5b924b5e717a28bd9a286d17be5a911348202594a4b436fa96",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -72,27 +77,32 @@
       "template_version": "0.1.0"
     },
     ".github/copilot-instructions.md": {
-      "hash": "sha256:659a359be8a1ece95e1d2a6dad764637ccbf2bd65ceacb8787af7df16fc48543",
+      "hash": "sha256:c6bcee501cdc11f696a60811b328cdbd9d84b1e1997f139b850d6fbddf98aed0",
       "mode": "shared",
       "template_version": "0.1.0"
     },
     ".github/hooks/aimem-memory.json": {
-      "hash": "sha256:6d1c6a94dc281bfa0bd4632413d760f952b2cffc74afe7ee2ede68eefed8a1ec",
+      "hash": "sha256:bdc8322ddddee47e962c554dc0e8f5a7ca7f4978422937bfe3f2edca6dad55d0",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".github/instructions/aimem-memory.instructions.md": {
-      "hash": "sha256:41ded77d8163c03ed07a682028f0ced42b819ccd7935988c702adfb570e99e0b",
+      "hash": "sha256:bd594766de01965b570951713485a750130b1482f4fb848e302faf36a347ed55",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
+    ".github/skills/lesson-learning/SKILL.md": {
+      "hash": "sha256:ce119960452770c72dd66be7a1ec61c825c8e2d24805d3edabb997b3824249b8",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".gitignore": {
-      "hash": "sha256:cf069c3d34802c9d997a5a2d42dfe797ac5a0a0344dc63609a424eb2e7aaf00d",
+      "hash": "sha256:83fdb8943bf23025f1266be084b8d204d55a84133a1f87afbec7744150f4822b",
       "mode": "shared",
       "template_version": "0.1.0"
     },
     ".kiro/agents/memory-curator.md": {
-      "hash": "sha256:a61204b8382661484b43694d028348a60194a832efd53f08ab83c9cf67baa368",
+      "hash": "sha256:1c4857c68a232b7c570c874c04b12b9dea4331f096056ac911e5a9cc8a60e6fb",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -102,17 +112,22 @@
       "template_version": "0.1.0"
     },
     ".kiro/hooks/aimem-memory.kiro.hook": {
-      "hash": "sha256:7e6b459a82d6eebfb79f921481b6a933b9edd7370031ece4c73ef2ac3009c289",
+      "hash": "sha256:3b5930dfc0257cc49adc7dadb0ec2a41e1698f2b7460c0f015bf950aa3f4ba48",
       "mode": "managed",
       "template_version": "0.1.0"
     },
     ".kiro/settings/mcp.json": {
-      "hash": "sha256:1ced6d705a44ad2f328d69ea79f467e749e9d46e6c88fe66f0cf7efca31de765",
+      "hash": "sha256:e39b30fdf07ec580348e61ea969d8915be854b74d1e0135ab46615b23c8bcf8c",
       "mode": "json_merge",
       "template_version": "0.1.0"
     },
+    ".kiro/skills/lesson-learning/SKILL.md": {
+      "hash": "sha256:ce119960452770c72dd66be7a1ec61c825c8e2d24805d3edabb997b3824249b8",
+      "mode": "managed",
+      "template_version": "0.1.0"
+    },
     ".kiro/steering/aimem-memory.md": {
-      "hash": "sha256:5f6b35eff659651b809b8f55f5c91a71697b6462170a3d433949166e765f6905",
+      "hash": "sha256:7811ac6948fed87c231efab25ca03716b98ee6688abddad0c5e6cf71f7be96fb",
       "mode": "managed",
       "template_version": "0.1.0"
     },
@@ -132,16 +147,16 @@
       "template_version": "0.1.0"
     },
     ".vscode/mcp.json": {
-      "hash": "sha256:c26064bf92c5bcf46cab9048417ad0c014cb0aa72abf6d7dbc82e8447149b6e5",
+      "hash": "sha256:cccdb57e230d29be5ace9ff979f3cf1d0589b74080739e6538cff6abd4e52769",
       "mode": "json_merge",
       "template_version": "0.1.0"
     },
     "AGENTS.md": {
-      "hash": "sha256:8265f9dba8fca3998f4b64bc87c17680f97e1b4c3ffb3e215a9879d585268ca5",
+      "hash": "sha256:e881606f270b4fe1eae86a1f2dad73c345bb7356b2dc9f617bcc06856e3a0842",
       "mode": "shared",
       "template_version": "0.1.0"
     }
   },
   "schema_version": 1,
-  "updated_at": "2026-07-19T10:11:41Z"
+  "updated_at": "2026-07-19T13:44:20Z"
 }

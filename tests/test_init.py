@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 from aimem.cli import main
@@ -17,6 +16,7 @@ EXPECTED = [
     ".aimem/hooks/consolidate_memory.py",
     ".aimem/hooks/guard_memory.py",
     ".aimem/hooks/manage_memory.py",
+    ".aimem/hooks/learn_session.py",
     ".aimem/index/project.json",
     ".aimem/memory/TEMPLATE.md",
     ".aimem/memory/project.md",
@@ -31,11 +31,13 @@ EXPECTED = [
     ".kiro/agents/memory-initializer.md",
     ".kiro/agents/memory-curator.md",
     ".kiro/hooks/aimem-memory.kiro.hook",
+    ".kiro/skills/lesson-learning/SKILL.md",
     ".github/copilot-instructions.md",
     ".github/instructions/aimem-memory.instructions.md",
     ".github/agents/memory-initializer.agent.md",
     ".github/agents/memory-curator.agent.md",
     ".github/hooks/aimem-memory.json",
+    ".github/skills/lesson-learning/SKILL.md",
 ]
 
 
@@ -74,8 +76,8 @@ def test_python_command_override(make_project) -> None:
     hook = (root / ".kiro/hooks/aimem-memory.kiro.hook").read_text(encoding="utf-8")
     assert "py -3 .aimem/hooks/inject_memory.py" in hook
     mcp = json.loads((root / ".vscode/mcp.json").read_text(encoding="utf-8"))
-    assert mcp["servers"]["aimem"]["command"] == "py"
-    assert mcp["servers"]["aimem"]["args"] == ["-3", "-m", "aimem", "mcp-server"]
+    assert mcp["servers"]["aimem"]["command"] == "aimem"
+    assert mcp["servers"]["aimem"]["args"] == ["mcp-server"]
 
 
 def test_no_mcp_suppresses_ide_mcp_configs(make_project) -> None:
@@ -90,19 +92,19 @@ def test_generated_mcp_configs_are_valid(make_project) -> None:
     root = make_project("--both")
     vscode = json.loads((root / ".vscode/mcp.json").read_text(encoding="utf-8"))
     assert vscode["servers"]["aimem"] == {
-        "args": ["-m", "aimem", "mcp-server"],
-        "command": sys.executable,
+        "args": ["mcp-server"],
+        "command": "aimem",
         "cwd": "${workspaceFolder}",
         "type": "stdio",
     }
     kiro = json.loads((root / ".kiro/settings/mcp.json").read_text(encoding="utf-8"))
     assert kiro["mcpServers"]["aimem"] == {
-        "args": ["-m", "aimem", "mcp-server"],
-        "command": sys.executable,
+        "args": ["mcp-server"],
+        "command": "aimem",
     }
 
 
-def test_legacy_python_command_defaults_are_repaired_for_mcp(tmp_path: Path) -> None:
+def test_existing_python_command_does_not_change_mcp_command(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     (root / ".aimem").mkdir(parents=True)
     (root / ".aimem/config.json").write_text(
@@ -113,7 +115,7 @@ def test_legacy_python_command_defaults_are_repaired_for_mcp(tmp_path: Path) -> 
     assert main(["init", "-C", str(root), "--both", "--no-input"]) == 0
 
     vscode = json.loads((root / ".vscode/mcp.json").read_text(encoding="utf-8"))
-    assert vscode["servers"]["aimem"]["command"] == sys.executable
+    assert vscode["servers"]["aimem"]["command"] == "aimem"
 
 
 def test_dry_run_writes_nothing(tmp_path: Path) -> None:

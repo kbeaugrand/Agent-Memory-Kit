@@ -26,14 +26,24 @@ def test_kiro_hook_is_valid(tmp_path: Path) -> None:
         "UserPromptSubmit",
         "PreToolUse",
         "PostFileSave",
-        "SessionEnd",
+        "Stop",
     } <= triggers
+    lesson = next(hook for hook in data["hooks"] if hook["name"] == "aimem-learn-session")
+    assert lesson["action"]["type"] == "agent"
+    assert "lesson-learning skill" in lesson["action"]["prompt"]
+    assert "coding instructions" in lesson["action"]["prompt"]
 
 
 def test_copilot_hook_is_valid(tmp_path: Path) -> None:
     root = _init(tmp_path)
     data = json.loads((root / ".github/hooks/aimem-memory.json").read_text(encoding="utf-8"))
-    assert set(data["hooks"]) >= {"SessionStart", "PreToolUse", "PostToolUse", "SessionEnd"}
+    assert set(data["hooks"]) >= {
+        "SessionStart",
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+        "SessionEnd",
+    }
     session = data["hooks"]["SessionStart"][0]
     assert session["type"] == "command"
     assert "windows" in session
@@ -42,6 +52,29 @@ def test_copilot_hook_is_valid(tmp_path: Path) -> None:
     session_end = data["hooks"]["SessionEnd"][0]
     assert session_end["type"] == "command"
     assert session_end["windows"] == session_end["command"]
+    stop = data["hooks"]["Stop"][0]
+    assert stop["type"] == "command"
+    assert stop["windows"] == stop["command"]
+    assert "learn_session.py" in stop["command"]
+
+
+def test_lesson_learning_skills_are_valid_and_managed_safely(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    skills = [
+        root / ".github/skills/lesson-learning/SKILL.md",
+        root / ".kiro/skills/lesson-learning/SKILL.md",
+    ]
+    for path in skills:
+        text = path.read_text(encoding="utf-8")
+        assert text.startswith("---\nname: lesson-learning\n")
+        assert "description:" in text
+        assert "user-invocable: false" in text
+        assert "memory_propose" in text
+        assert "memory_approve" in text
+        assert "coding rule" in text
+        assert "Never edit aimem-managed files" in text
+        assert ".github/instructions/aimem-memory.instructions.md" in text
+        assert ".kiro/steering/aimem-memory.md" in text
 
 
 def test_copilot_instructions_have_applyto(tmp_path: Path) -> None:
