@@ -167,6 +167,41 @@
       ]
     },
     {
+      "confidence": 0.96,
+      "created_at": "2026-07-19T15:54:36Z",
+      "evidence": [
+        "source_code"
+      ],
+      "id": "mem_1cfea5f3238b742d",
+      "keywords": [
+        "ci",
+        "packaging",
+        "skill",
+        "smoke-test",
+        "templates"
+      ],
+      "kind": "workflow",
+      "priority": "high",
+      "relationships": [],
+      "schema_version": 2,
+      "scope": "project",
+      "section": "Commands",
+      "source": ".github/workflows/ci.yml; local wheel and init smoke checks",
+      "status": "active",
+      "text": "Validate packaged templates from an installed distribution, not only the source checkout: the CI `install-from-git` job loads `skills/lesson_learning.md` through `aimem.templates.loader`, runs `aimem init --both`, and asserts both generated `SKILL.md` files exist.",
+      "updated_at": "2026-07-19T15:54:36Z",
+      "validation_status": "verified",
+      "validity": {
+        "from": "2026-07-19T15:54:36Z",
+        "until": null
+      },
+      "verified_from": [
+        ".github/workflows/ci.yml",
+        "pyproject.toml",
+        "package.json"
+      ]
+    },
+    {
       "confidence": 0.94,
       "created_at": "2026-07-14T14:15:59Z",
       "evidence": [

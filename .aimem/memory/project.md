@@ -153,3 +153,12 @@ This header comment is stripped before injection, so it costs no context tokens.
 ## Architecture Diagrams
 
 ## Glossary
+
+## Commands
+- High Workflow: Validate packaged templates from an installed distribution, not only the source checkout: the CI `install-from-git` job loads `skills/lesson_learning.md` through `aimem.templates.loader`, runs `aimem init --both`, and asserts both generated `SKILL.md` files exist.
+  Evidence: Source Code
+  Validation: Verified
+  Source: .github/workflows/ci.yml; local wheel and init smoke checks
+  Verified from: .github/workflows/ci.yml, pyproject.toml, package.json
+  Keywords: ci, packaging, skill, smoke-test, templates
+  <!-- aimem:id=mem_1cfea5f3238b742d -->

@@ -53,6 +53,13 @@ jobs:
         run: python scripts/check_version_sync.py
       - name: pip install from checkout
         run: python -m pip install .
+      - name: Packaged lesson-learning skill smoke test
+        shell: bash
+        run: |
+          python -c "from aimem.templates.loader import load_template; assert 'name: lesson-learning' in load_template('skills/lesson_learning.md')"
+          aimem init --both --no-input -C .package-smoke
+          test -f .package-smoke/.github/skills/lesson-learning/SKILL.md
+          test -f .package-smoke/.kiro/skills/lesson-learning/SKILL.md
       - name: aimem CLI smoke test
         run: aimem --version
       - name: Node launcher smoke test
