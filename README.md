@@ -8,9 +8,9 @@
 instructions, hooks, memory files, and helper agents needed for coding agents to reuse
 the same context across sessions and tools.
 
-There is no runtime service and no package dependency after initialization. The generated
-files do the work; rerun `aimem init` only when you want to repair or update the managed
-configuration.
+The generated hooks do not need an `aimem` package dependency after initialization. The
+optional MCP memory service does: install the Python package when you want agents to use
+the generated MCP tools.
 
 ## Value proposition
 
@@ -31,19 +31,24 @@ chat transcript or disappears between sessions.
 
 ## Quick start
 
-Install the CLI, initialize a project, review the generated files, and commit the shared
-memory configuration.
+Initialize the project with `npx`, then install the Python package that provides the local
+MCP server referenced by the generated IDE configuration:
 
 ```bash
-pipx install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
 cd path/to/your-project
-aimem init --both
+npx github:kbeaugrand/Agent-Memory-Kit init --both
+python -m pip install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
 ```
+
+Python 3.10+ must be available on `PATH`. Run the `pip` command with the same Python
+environment that `npx` discovers so `<python> -m aimem mcp-server` remains available after
+the one-shot `npx` process exits. If you do not want MCP integration, initialize with
+`--no-mcp` and skip the `pip` installation.
 
 For a non-interactive setup, such as CI or scripted repository bootstrapping:
 
 ```bash
-aimem init --both --no-input -C path/to/your-project
+npx github:kbeaugrand/Agent-Memory-Kit init --both --no-input -C path/to/your-project
 ```
 
 After init, ask your coding agent to seed or update memory in normal language:
@@ -96,12 +101,22 @@ uvx --from git+https://github.com/kbeaugrand/Agent-Memory-Kit.git aimem init
 
 ### npx from Git
 
-The npm package is a thin Node launcher for the same Python CLI. Python 3.10+ must be on
-`PATH`.
+The npm package is a thin Node launcher for the same Python CLI. It is convenient for
+one-shot initialization and requires Python 3.10+ on `PATH`.
 
 ```bash
 npx github:kbeaugrand/Agent-Memory-Kit init
 ```
+
+By default, init also writes IDE configuration for the MCP memory service. Install the
+Python package into the interpreter selected by `npx` so that server remains available:
+
+```bash
+python -m pip install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
+```
+
+Use `--no-mcp` when you only want the generated files and hooks and do not want to install
+the MCP server runtime.
 
 Once packages are published, `pipx install aimem`, `pip install aimem`, and
 `npx aimem init` will work as well.
@@ -177,6 +192,13 @@ server entries launch the Python environment that ran `aimem init`:
 If you pass `--python-command`, that command is used for MCP as well. Existing generated
 configs that still point at bare `python` or `python3` are repaired to the current
 interpreter when you rerun `aimem init`.
+
+The MCP server is included in the Python package. If you initialized through `npx`, install
+it persistently with:
+
+```bash
+python -m pip install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
+```
 
 The MCP server uses stdio and resolves the project from `--directory`,
 `AIMEM_PROJECT_DIR`, or the current workspace. MCP mode requires the installed Python
