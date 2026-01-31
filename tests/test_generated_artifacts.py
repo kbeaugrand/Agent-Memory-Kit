@@ -9,7 +9,8 @@ from aimem.templates.loader import load_template
 NATIVE_GUIDANCE_TEMPLATES = (
     "copilot/instructions_block.md",
     "copilot/project_knowledge_block.md",
-    "skills/generate_project_instructions.md",
+    "agents/copilot_generate_project_instructions.md",
+    "agents/kiro_generate_project_instructions.md",
     "skills/lesson_learning.md",
 )
 
@@ -52,19 +53,18 @@ def test_guidance_uses_lesson_learning_to_maintain_knowledge(make_project) -> No
         assert "If no durable lesson emerged" in text
 
 
-def test_skills_use_native_project_knowledge_only(make_project) -> None:
+def test_customizations_use_native_project_knowledge_only(make_project) -> None:
     root = make_project("--both")
     skill_paths = (
         root / ".github/skills/lesson-learning/SKILL.md",
-        root / ".github/skills/generate-project-instructions/SKILL.md",
+        root / ".github/agents/generate-project-instructions.agent.md",
         root / ".kiro/skills/lesson-learning/SKILL.md",
-        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+        root / ".kiro/agents/generate-project-instructions.md",
     )
 
     for path in skill_paths:
         text = path.read_text(encoding="utf-8")
-        assert text.startswith("---\nname:")
-        assert "user-invocable: true" in text
+        assert text.startswith("---\n")
         assert ".aimem/" not in text
         assert "{{" not in text
 
@@ -111,12 +111,12 @@ def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
 
 def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_project) -> None:
     root = make_project("--both")
-    skill_paths = (
-        root / ".github/skills/generate-project-instructions/SKILL.md",
-        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    agent_paths = (
+        root / ".github/agents/generate-project-instructions.agent.md",
+        root / ".kiro/agents/generate-project-instructions.md",
     )
 
-    for path in skill_paths:
+    for path in agent_paths:
         text = path.read_text(encoding="utf-8")
         assert "lesson-learning scope rules" in text
         assert "exact applicability" in text
@@ -130,12 +130,12 @@ def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_pr
 
 def test_project_instruction_generation_requires_custom_kiro_steering(make_project) -> None:
     root = make_project("--both")
-    skill_paths = (
-        root / ".github/skills/generate-project-instructions/SKILL.md",
-        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    agent_paths = (
+        root / ".github/agents/generate-project-instructions.agent.md",
+        root / ".kiro/agents/generate-project-instructions.md",
     )
 
-    for path in skill_paths:
+    for path in agent_paths:
         text = path.read_text(encoding="utf-8")
         assert "For every distinct non-global applicability, create a custom steering" in text
         assert 'fileMatchPattern: "<narrowest workspace-relative glob>"' in text
@@ -144,13 +144,13 @@ def test_project_instruction_generation_requires_custom_kiro_steering(make_proje
 
 def test_project_instruction_generation_honors_enabled_platforms(make_project) -> None:
     root = make_project("--copilot")
-    skill = (root / ".github/skills/generate-project-instructions/SKILL.md").read_text(
+    agent = (root / ".github/agents/generate-project-instructions.agent.md").read_text(
         encoding="utf-8"
     )
 
-    assert "Generate guidance only for enabled platforms" in skill
-    assert "Never create configuration" in skill
-    assert "platform that is not already enabled" in skill
+    assert "Generate guidance only for enabled platforms" in agent
+    assert "Never create configuration" in agent
+    assert "platform that is not already enabled" in agent
     assert not (root / ".kiro").exists()
 
 

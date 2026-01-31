@@ -37,7 +37,7 @@ def test_seed_files_are_preserved(tmp_path: Path) -> None:
     files = (
         root / ".kiro/steering/product.md",
         root / ".github/skills/lesson-learning/SKILL.md",
-        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+        root / ".kiro/agents/generate-project-instructions.md",
     )
     for path in files:
         path.write_text("user-owned knowledge\n", encoding="utf-8")

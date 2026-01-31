@@ -133,9 +133,9 @@ def _build_plan(
                     _render("skills/lesson_learning.md"),
                 ),
                 project(
-                    paths.KIRO_SKILL_GENERATE_PROJECT_INSTRUCTIONS,
+                    paths.KIRO_AGENT_GENERATE_PROJECT_INSTRUCTIONS,
                     WriteMode.SEED,
-                    _render("skills/generate_project_instructions.md"),
+                    _render("agents/kiro_generate_project_instructions.md"),
                 ),
                 project(
                     paths.KIRO_HOOK_LESSON_LEARNING,
@@ -159,9 +159,9 @@ def _build_plan(
                     _render("skills/lesson_learning.md"),
                 ),
                 project(
-                    paths.COPILOT_SKILL_GENERATE_PROJECT_INSTRUCTIONS,
+                    paths.COPILOT_AGENT_GENERATE_PROJECT_INSTRUCTIONS,
                     WriteMode.SEED,
-                    _render("skills/generate_project_instructions.md"),
+                    _render("agents/copilot_generate_project_instructions.md"),
                 ),
                 project(
                     paths.COPILOT_HOOK_LESSON_LEARNING,

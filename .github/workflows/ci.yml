@@ -60,9 +60,9 @@ jobs:
           test -f .package-smoke/.kiro/steering/product.md
           test ! -e .package-smoke/.kiro/steering/aimem-memory.md
           test -f .package-smoke/.github/skills/lesson-learning/SKILL.md
-          test -f .package-smoke/.github/skills/generate-project-instructions/SKILL.md
+          test -f .package-smoke/.github/agents/generate-project-instructions.agent.md
           test -f .package-smoke/.kiro/skills/lesson-learning/SKILL.md
-          test -f .package-smoke/.kiro/skills/generate-project-instructions/SKILL.md
+          test -f .package-smoke/.kiro/agents/generate-project-instructions.md
           test ! -e .package-smoke/.aimem
       - name: aimem CLI smoke test
         run: aimem --version
