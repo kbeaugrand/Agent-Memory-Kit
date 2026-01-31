@@ -1,4 +1,4 @@
-"""Interactive prompts for ``aimem init`` (toolchain and user-scope selection).
+"""Interactive toolchain selection for ``aimem init``.
 
 All prompts are skippable: callers decide interactivity based on ``--no-input`` and
 whether stdin is a TTY. In non-interactive mode these helpers are not called.
@@ -22,11 +22,3 @@ def select_toolchains() -> tuple[bool, bool]:
         if choice == "3":
             return False, True
         print("Please enter 1, 2, or 3.")
-
-
-def confirm_user_scope() -> bool:
-    """Ask whether to also set up global user memory in the home directory."""
-    print()
-    print("Set up global USER memory in your home directory (~/.aimem/memory/user.md)?")
-    answer = input("This writes outside the project. [y/N]: ").strip().lower()
-    return answer in {"y", "yes"}

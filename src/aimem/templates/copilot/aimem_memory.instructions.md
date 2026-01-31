@@ -2,6 +2,35 @@
 applyTo: "**"
 ---
 
+# Project Knowledge
+
+Keep durable repository knowledge in GitHub Copilot instruction files. Do not create a separate
+memory directory, metadata index, proposal store, or session transcript.
+
+## Where to record knowledge
+
+- Add repository-wide guidance outside the aimem-managed block in
+  `.github/copilot-instructions.md`.
+- Create or update a focused `.github/instructions/*.instructions.md` file when guidance applies
+  only to selected paths.
+- Use the `applyTo` frontmatter field to scope focused instructions to the files they govern.
+
+Preserve frontmatter, managed markers, and existing user-authored guidance. Never place learned
+project rules inside the aimem-managed block because rerunning `aimem init` may update that block.
+
+## What to retain
+
+Record only knowledge that is validated, reusable, likely to remain true, and specific enough
+for a future coding agent to act on. Good candidates include confirmed commands, architecture
+decisions, repository conventions, recurring mistakes, and domain terminology.
+
+Do not retain secrets, credentials, personal data, temporary plans, task progress, unvalidated
+assumptions, one-off details, or conversation transcripts. Check existing instructions first and
+update the owning section instead of duplicating guidance. Current explicit user instructions
+take precedence over repository instructions.---
+applyTo: "**"
+---
+
 # AI Memory Protocol (managed by aimem)
 
 This project uses a persistent, cross-tool memory system. Canonical memory lives in plain

@@ -1,16 +1,16 @@
 {
   "name": "aimem",
   "version": "0.1.0",
-  "description": "Initialize or update cross-tool AI agent memory (Kiro + GitHub Copilot) for a project.",
+  "description": "Initialize native Kiro steering, GitHub Copilot instructions, and skills.",
   "keywords": [
     "ai",
     "memory",
     "kiro",
     "copilot",
-    "agents",
     "cli",
     "steering",
-    "hooks"
+    "instructions",
+    "skills"
   ],
   "homepage": "https://github.com/kbeaugrand/Agent-Memory-Kit#readme",
   "bugs": {

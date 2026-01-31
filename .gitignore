@@ -30,12 +30,3 @@ node_modules/
 .idea/
 *.swp
 
-# AIMEM:BEGIN (managed by aimem — do not edit inside this block; run `aimem init` to update)
-# aimem — ignore ephemeral and local memory artifacts
-.aimem/memory/session/
-.aimem/index/session.json
-.aimem/index/vector.json
-.aimem/proposals/
-.aimem/backups/
-.aimem/runtime/
-# AIMEM:END

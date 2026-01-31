@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "aimem"
 dynamic = ["version"]
-description = "Initialize or update cross-tool AI agent memory (Kiro + GitHub Copilot) for a project."
+description = "Initialize native Kiro steering, GitHub Copilot instructions, and skills."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Kevin BEAUGRAND" }]
-keywords = ["ai", "memory", "kiro", "copilot", "agents", "cli", "steering", "hooks"]
+keywords = ["ai", "memory", "kiro", "copilot", "cli", "steering", "instructions", "skills"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Software Development :: Code Generators",
 ]
-dependencies = ["mcp>=1.26.0"]
+dependencies = []
 
 [project.scripts]
 aimem = "aimem.cli:main"
@@ -60,7 +60,6 @@ include = [
 line-length = 100
 target-version = "py310"
 src = ["src", "tests"]
-extend-exclude = ["src/aimem/templates/hooks", ".aimem"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "SIM", "C4"]

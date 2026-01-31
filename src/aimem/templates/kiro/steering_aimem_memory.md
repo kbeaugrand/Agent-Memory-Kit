@@ -2,6 +2,34 @@
 inclusion: always
 ---
 
+# Project Knowledge
+
+Keep durable repository knowledge in Kiro steering files. Do not create a separate memory
+directory, metadata index, proposal store, or session transcript.
+
+## Where to record knowledge
+
+- Update `product.md` for product purpose, users, domain terms, and behavior.
+- Update `tech.md` for dependencies, commands, tooling, constraints, and validation workflows.
+- Update `structure.md` for architecture, dependency direction, layout, naming, and patterns.
+- Create a focused steering file when a rule needs narrower inclusion or does not fit those files.
+
+Preserve YAML frontmatter and existing user-authored guidance. Use Kiro's native `inclusion`,
+`fileMatchPattern`, and related steering fields to scope focused rules.
+
+## What to retain
+
+Record only knowledge that is validated, reusable, likely to remain true, and specific enough
+for a future coding agent to act on. Good candidates include confirmed commands, architecture
+decisions, repository conventions, recurring mistakes, and domain terminology.
+
+Do not retain secrets, credentials, personal data, temporary plans, task progress, unvalidated
+assumptions, one-off details, or conversation transcripts. Check existing steering first and
+update the owning section instead of duplicating guidance. Current explicit user instructions
+take precedence over steering.---
+inclusion: always
+---
+
 # AI Memory Protocol (managed by aimem)
 
 This project uses a persistent, cross-tool memory system. Canonical memory lives in plain

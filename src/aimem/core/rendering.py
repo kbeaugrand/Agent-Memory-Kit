@@ -1,8 +1,7 @@
-"""Text rendering helpers: variable substitution, hashing, and marker-block merging."""
+"""Marker-block rendering helpers for shared instruction files."""
 
 from __future__ import annotations
 
-import hashlib
 import re
 
 MARKER_BEGIN = "AIMEM:BEGIN"
@@ -13,23 +12,6 @@ _COMMENT_STYLES = {
     "md": ("<!-- {begin} ({note}) -->", "<!-- {end} -->"),
     "hash": ("# {begin} ({note})", "# {end}"),
 }
-
-
-def sha256_text(text: str) -> str:
-    """Return a stable ``sha256:<hex>`` digest of ``text`` (UTF-8, normalized newlines)."""
-    normalized = text.replace("\r\n", "\n")
-    return "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
-
-
-def substitute(text: str, variables: dict[str, str]) -> str:
-    """Replace ``{{VAR}}`` tokens in ``text`` with their values.
-
-    Uses plain string replacement (not :meth:`str.format`) so that literal ``{`` and
-    ``}`` characters in JSON/YAML templates are left untouched.
-    """
-    for key, value in variables.items():
-        text = text.replace("{{" + key + "}}", value)
-    return text
 
 
 def markers(comment_style: str) -> tuple[str, str]:

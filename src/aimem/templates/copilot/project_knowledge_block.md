@@ -1,4 +1,3 @@
-<!-- AIMEM:BEGIN (managed by aimem — do not edit inside this block; run `aimem init` to update) -->
 ## Project Knowledge
 
 This repository keeps durable coding-agent knowledge in native GitHub Copilot instruction files.
@@ -13,4 +12,3 @@ instruction or steering file. If no durable lesson emerged, it makes no changes.
 Retain only validated, reusable repository knowledge. Preserve existing guidance, avoid
 duplicates, never store secrets or transient task state, and follow current explicit user
 instructions when they conflict with repository guidance.
-<!-- AIMEM:END -->

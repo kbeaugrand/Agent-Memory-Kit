@@ -1,9 +1,8 @@
-"""Tests for idempotency, backups, and preservation of user edits."""
+"""Tests for idempotency and preservation of native project knowledge files."""
 
 from __future__ import annotations
 
 import hashlib
-import json
 from pathlib import Path
 
 from aimem.cli import main
@@ -14,12 +13,11 @@ def _init(root: Path, *args: str) -> None:
 
 
 def _snapshot(root: Path) -> dict[str, str]:
-    snapshot = {}
-    for path in sorted(root.rglob("*")):
-        if path.is_file():
-            digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            snapshot[path.relative_to(root).as_posix()] = digest
-    return snapshot
+    return {
+        path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
 
 
 def test_rerun_is_noop(tmp_path: Path) -> None:
@@ -31,96 +29,51 @@ def test_rerun_is_noop(tmp_path: Path) -> None:
     assert _snapshot(root) == first
 
 
-def test_managed_file_modification_is_backed_up(tmp_path: Path) -> None:
+def test_seed_files_are_preserved(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
     _init(root, "--both")
 
-    target = root / ".aimem/hooks/inject_memory.py"
-    original = target.read_text(encoding="utf-8")
-    target.write_text(original + "\n# local tweak\n", encoding="utf-8")
+    files = (
+        root / ".kiro/steering/product.md",
+        root / ".github/instructions/aimem-memory.instructions.md",
+        root / ".github/skills/lesson-learning/SKILL.md",
+        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    )
+    for path in files:
+        path.write_text("user-owned knowledge\n", encoding="utf-8")
 
     _init(root, "--both")
-
-    assert target.read_text(encoding="utf-8") == original
-    backups = list((root / ".aimem/backups").rglob("*inject_memory.py"))
-    assert backups
-    assert "# local tweak" in backups[0].read_text(encoding="utf-8")
+    for path in files:
+        assert path.read_text(encoding="utf-8") == "user-owned knowledge\n"
 
 
-def test_seed_file_is_preserved(tmp_path: Path) -> None:
+def test_copilot_managed_block_preserves_surrounding_content(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
-    _init(root, "--both")
+    _init(root, "--copilot")
 
-    project_memory = root / ".aimem/memory/project.md"
-    project_memory.write_text("# My own notes\n", encoding="utf-8")
+    instructions = root / ".github/copilot-instructions.md"
+    generated = instructions.read_text(encoding="utf-8")
+    instructions.write_text(f"# Team Rules\n\n{generated}\nKeep this rule.\n", encoding="utf-8")
 
-    _init(root, "--both")
-    assert project_memory.read_text(encoding="utf-8") == "# My own notes\n"
-
-
-def test_shared_block_preserves_surrounding(tmp_path: Path) -> None:
-    root = tmp_path / "proj"
-    root.mkdir()
-    _init(root, "--both")
-
-    agents = root / "AGENTS.md"
-    content = agents.read_text(encoding="utf-8")
-    agents.write_text(f"# Heading\n\n{content}\n## Extra\nkeep me\n", encoding="utf-8")
-
-    _init(root, "--both")
-    updated = agents.read_text(encoding="utf-8")
-    assert "# Heading" in updated
-    assert "keep me" in updated
+    _init(root, "--copilot")
+    updated = instructions.read_text(encoding="utf-8")
+    assert "# Team Rules" in updated
+    assert "Keep this rule." in updated
     assert "AIMEM:BEGIN" in updated
 
 
-def test_user_owned_coding_rules_survive_rerun(tmp_path: Path) -> None:
+def test_user_owned_native_files_survive_rerun(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
     _init(root, "--both")
 
-    copilot_rules = root / ".github/instructions/python-rules.instructions.md"
-    kiro_rules = root / ".kiro/steering/python-rules.md"
-    copilot_rules.write_text(
-        '---\napplyTo: "**/*.py"\n---\n\nRun focused tests after Python edits.\n',
-        encoding="utf-8",
-    )
-    kiro_rules.write_text(
-        "---\ninclusion: fileMatch\nfileMatchPattern: '**/*.py'\n---\n\n"
-        "Run focused tests after Python edits.\n",
-        encoding="utf-8",
-    )
+    copilot = root / ".github/instructions/python.instructions.md"
+    kiro = root / ".kiro/steering/python.md"
+    copilot.write_text('---\napplyTo: "**/*.py"\n---\n\nRun pytest.\n', encoding="utf-8")
+    kiro.write_text("---\ninclusion: always\n---\n\nRun pytest.\n", encoding="utf-8")
 
-    before = {path: path.read_text(encoding="utf-8") for path in (copilot_rules, kiro_rules)}
+    before = {path: path.read_text(encoding="utf-8") for path in (copilot, kiro)}
     _init(root, "--both")
     assert {path: path.read_text(encoding="utf-8") for path in before} == before
-
-
-def test_mcp_config_merge_preserves_other_servers(tmp_path: Path) -> None:
-    root = tmp_path / "proj"
-    root.mkdir()
-    config_path = root / ".vscode/mcp.json"
-    config_path.parent.mkdir(parents=True)
-    config_path.write_text(
-        json.dumps(
-            {
-                "inputs": [{"id": "token", "type": "promptString"}],
-                "servers": {"otherServer": {"command": "other", "args": []}},
-            }
-        ),
-        encoding="utf-8",
-    )
-
-    _init(root, "--both")
-
-    data = json.loads(config_path.read_text(encoding="utf-8"))
-    assert data["inputs"] == [{"id": "token", "type": "promptString"}]
-    assert data["servers"]["otherServer"] == {"command": "other", "args": []}
-    assert data["servers"]["aimem"] == {
-        "args": ["mcp-server"],
-        "command": "aimem",
-        "cwd": "${workspaceFolder}",
-        "type": "stdio",
-    }

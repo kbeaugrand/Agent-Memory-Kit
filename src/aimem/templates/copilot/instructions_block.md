@@ -1,4 +1,13 @@
-## AI Memory
+## Project Knowledge
+
+This repository keeps durable coding-agent knowledge in native GitHub Copilot instruction files.
+Store repository-wide rules outside this managed block in `.github/copilot-instructions.md`, and
+store path-specific rules in `.github/instructions/*.instructions.md` with appropriate `applyTo`
+frontmatter.
+
+Retain only validated, reusable repository knowledge. Preserve existing guidance, avoid
+duplicates, never store secrets or transient task state, and follow current explicit user
+instructions when they conflict with repository guidance.## AI Memory
 
 This project uses **aimem** for persistent, cross-tool agent memory. Canonical memory
 lives in Markdown files and is injected into your context automatically at session start.
