@@ -4,9 +4,8 @@
 
 `aimem init` creates Kiro steering, GitHub Copilot instructions, and reusable skills for a
 repository.
-There is no `.aimem` memory directory, metadata index, hook runtime, MCP server, proposal
-store, or separate session/user memory. Agents read and update the same native files your
-team reviews and commits.
+Agents read and update the same native files your team reviews and commits, without a separate
+memory directory, metadata index, proposal store, or session/user memory.
 
 ## Why use it
 

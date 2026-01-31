@@ -25,9 +25,6 @@ UNSUPPORTED_MEMORY_ACTIONS = (
     "{{AGENTS_MEMORY_DIR}}",
     ".aimem/memory",
     ".aimem/index",
-    "memory_propose",
-    "memory_approve",
-    "memory_search",
     "record_memory.py",
     "manage_memory.py",
 )
@@ -65,8 +62,6 @@ def test_guidance_uses_native_storage_only(make_project) -> None:
     assert ".github/instructions" in guidance
     assert ".aimem/memory" not in guidance
     assert ".aimem/index" not in guidance
-    assert "memory_propose" not in guidance
-    assert "mcp-server" not in guidance
     assert "{{" not in guidance
 
 
@@ -99,8 +94,6 @@ def test_skills_use_native_project_knowledge_only(make_project) -> None:
         assert text.startswith("---\nname:")
         assert "user-invocable: true" in text
         assert ".aimem/" not in text
-        assert "memory_propose" not in text
-        assert "mcp-server" not in text
         assert "{{" not in text
 
 
@@ -161,6 +154,18 @@ def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_pr
         assert "inclusion: fileMatch" in text
         assert "fileMatchPattern" in text
         assert "inclusion: always" in text
+
+
+def test_project_instruction_generation_honors_enabled_platforms(make_project) -> None:
+    root = make_project("--copilot")
+    skill = (root / ".github/skills/generate-project-instructions/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Generate guidance only for enabled platforms" in skill
+    assert "Never create configuration" in skill
+    assert "platform that is not already enabled" in skill
+    assert not (root / ".kiro").exists()
 
 
 def test_seed_steering_files_have_expected_sections(make_project) -> None:

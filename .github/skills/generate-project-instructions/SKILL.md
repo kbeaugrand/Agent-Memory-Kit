@@ -1,31 +1,35 @@
 ---
 name: generate-project-instructions
-description: Analyze repository practices and generate evidence-based, scoped GitHub Copilot instructions and Kiro steering.
+description: Analyze repository practices and generate evidence-based, scoped guidance for the configured AI coding platforms.
 user-invocable: true
 ---
 
 # Generate Project Instructions
 
-Analyze the current repository and create or update native project guidance for GitHub Copilot
-and Kiro. Treat code, tests, configuration, and authoritative documentation as evidence.
+Analyze the current repository and create or update native project guidance for its configured AI
+coding platforms. Treat code, tests, configuration, and authoritative documentation as evidence.
 
 ## Procedure
 
-1. Inspect existing `.github/copilot-instructions.md`,
-   `.github/instructions/**/*.instructions.md`, and `.kiro/steering/**/*.md` files. Preserve
+1. Determine the enabled platforms from the native aimem skill or configuration already present:
+   `.github/skills/generate-project-instructions/SKILL.md` or GitHub Copilot instruction files
+   enable GitHub Copilot; `.kiro/skills/generate-project-instructions/SKILL.md` or Kiro steering
+   files enable Kiro. Generate guidance only for enabled platforms. Never create configuration
+   for a platform that is not already enabled in the repository.
+2. Inspect the existing instruction or steering files for enabled platforms. Preserve
    user-authored guidance and aimem-managed markers.
-2. Identify languages, frameworks, module boundaries, validation commands, dependency rules,
+3. Identify languages, frameworks, module boundaries, validation commands, dependency rules,
    naming conventions, and repeated implementation patterns. Confirm each rule with authoritative
    configuration, documentation, representative files, or tests.
-3. Exclude generated output, vendored dependencies, caches, build artifacts, and isolated legacy
+4. Exclude generated output, vendored dependencies, caches, build artifacts, and isolated legacy
    code unless authoritative project guidance establishes them as current practice.
-4. Apply the lesson-learning scope rules before creating or updating a file. Determine each rule's
+5. Apply the lesson-learning scope rules before creating or updating a file. Determine each rule's
    exact applicability by file type, directory, component, workflow, or the whole repository.
    Do not group rules with different targets merely because they concern the same technology.
-5. Keep each focused file concise and cohesive. Split rules into separate files when they do not
+6. Keep each focused file concise and cohesive. Split rules into separate files when they do not
    share the same applicability so agents load only guidance relevant to the current target.
    Prefer actionable, non-obvious instructions over broad repository summaries.
-6. Create or minimally update the corresponding native files:
+7. Create or minimally update files for each enabled platform:
    - GitHub Copilot: place targeted rules in
      `.github/instructions/<concern>.instructions.md` with the narrowest accurate workspace-relative
      `applyTo` glob. Use multiple globs only when every rule applies to every listed target. Reserve
@@ -34,9 +38,10 @@ and Kiro. Treat code, tests, configuration, and authoritative documentation as e
      `inclusion: fileMatch` and the narrowest accurate `fileMatchPattern`. Use `inclusion: always`
      only for genuinely global rules, placed in the appropriate `product.md`, `tech.md`, or
      `structure.md` file.
-7. Prefer updating an existing rule over adding a duplicate. Make minimal edits and preserve
+8. Prefer updating an existing rule over adding a duplicate. Make minimal edits and preserve
    unrelated guidance when an existing file already owns the same concern and applicability.
-8. Validate frontmatter, paths, scope, file cohesion, and consistency between platforms. Report
+9. Validate frontmatter, paths, scope, file cohesion, and consistency between enabled platforms.
+   Report
    the evidence used and any uncertain practice intentionally omitted.
 
 ## Boundaries
