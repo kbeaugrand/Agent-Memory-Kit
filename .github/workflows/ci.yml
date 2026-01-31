@@ -56,7 +56,7 @@ jobs:
           python -c "from aimem.templates.loader import load_template; assert 'Project Knowledge' in load_template('kiro/steering_project_knowledge.md')"
           python -c "from aimem.templates.loader import load_template; assert 'Lesson Learning' in load_template('skills/lesson_learning.md')"
           aimem init --both --no-input -C .package-smoke
-          test -f .package-smoke/.github/instructions/aimem-memory.instructions.md
+          test -f .package-smoke/.github/copilot-instructions.md
           test -f .package-smoke/.kiro/steering/aimem-memory.md
           test -f .package-smoke/.github/skills/lesson-learning/SKILL.md
           test -f .package-smoke/.github/skills/generate-project-instructions/SKILL.md

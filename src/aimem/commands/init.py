@@ -159,11 +159,6 @@ def _build_plan(
                     _render("copilot/project_knowledge_block.md"),
                 ),
                 project(
-                    paths.COPILOT_KNOWLEDGE_INSTRUCTIONS,
-                    WriteMode.SEED,
-                    _render("copilot/project_knowledge.instructions.md"),
-                ),
-                project(
                     paths.COPILOT_SKILL_LESSON_LEARNING,
                     WriteMode.SEED,
                     _render("skills/lesson_learning.md"),

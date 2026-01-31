@@ -7,9 +7,7 @@ import json
 from aimem.templates.loader import load_template
 
 NATIVE_GUIDANCE_TEMPLATES = (
-    "copilot/aimem_memory.instructions.md",
     "copilot/instructions_block.md",
-    "copilot/project_knowledge.instructions.md",
     "copilot/project_knowledge_block.md",
     "kiro/steering_aimem_memory.md",
     "kiro/steering_project_knowledge.md",
@@ -32,12 +30,8 @@ UNSUPPORTED_MEMORY_ACTIONS = (
 def test_native_guidance_has_platform_frontmatter(make_project) -> None:
     root = make_project("--both")
     kiro = (root / ".kiro/steering/aimem-memory.md").read_text(encoding="utf-8")
-    copilot = (root / ".github/instructions/aimem-memory.instructions.md").read_text(
-        encoding="utf-8"
-    )
 
     assert kiro.startswith("---\ninclusion: always\n---")
-    assert copilot.startswith('---\napplyTo: "**"\n---')
 
 
 def test_source_guidance_references_only_native_knowledge_actions() -> None:
@@ -53,7 +47,6 @@ def test_guidance_uses_native_storage_only(make_project) -> None:
         for path in (
             root / ".kiro/steering/aimem-memory.md",
             root / ".github/copilot-instructions.md",
-            root / ".github/instructions/aimem-memory.instructions.md",
         )
     )
 
@@ -68,7 +61,6 @@ def test_guidance_uses_lesson_learning_to_maintain_knowledge(make_project) -> No
     root = make_project("--both")
     guidance_paths = (
         root / ".github/copilot-instructions.md",
-        root / ".github/instructions/aimem-memory.instructions.md",
         root / ".kiro/steering/aimem-memory.md",
     )
 

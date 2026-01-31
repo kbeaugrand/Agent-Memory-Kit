@@ -15,7 +15,6 @@ EXPECTED = [
     ".kiro/skills/generate-project-instructions/SKILL.md",
     ".kiro/hooks/lesson-learning.kiro.hook",
     ".github/copilot-instructions.md",
-    ".github/instructions/aimem-memory.instructions.md",
     ".github/skills/lesson-learning/SKILL.md",
     ".github/skills/generate-project-instructions/SKILL.md",
     ".github/hooks/lesson-learning.json",
@@ -39,7 +38,8 @@ def test_kiro_only(make_project) -> None:
 
 def test_copilot_only(make_project) -> None:
     root = make_project("--copilot")
-    assert (root / ".github/instructions/aimem-memory.instructions.md").is_file()
+    assert (root / ".github/copilot-instructions.md").is_file()
+    assert not (root / ".github/instructions/aimem-memory.instructions.md").exists()
     assert not (root / ".kiro").exists()
     assert not (root / ".aimem").exists()
 

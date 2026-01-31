@@ -13,7 +13,6 @@ KIRO_HOOK_LESSON_LEARNING = ".kiro/hooks/lesson-learning.kiro.hook"
 
 # GitHub Copilot artifacts.
 COPILOT_INSTRUCTIONS = ".github/copilot-instructions.md"
-COPILOT_KNOWLEDGE_INSTRUCTIONS = ".github/instructions/aimem-memory.instructions.md"
 COPILOT_SKILL_LESSON_LEARNING = ".github/skills/lesson-learning/SKILL.md"
 COPILOT_SKILL_GENERATE_PROJECT_INSTRUCTIONS = (
     ".github/skills/generate-project-instructions/SKILL.md"

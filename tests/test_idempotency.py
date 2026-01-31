@@ -36,7 +36,6 @@ def test_seed_files_are_preserved(tmp_path: Path) -> None:
 
     files = (
         root / ".kiro/steering/product.md",
-        root / ".github/instructions/aimem-memory.instructions.md",
         root / ".github/skills/lesson-learning/SKILL.md",
         root / ".kiro/skills/generate-project-instructions/SKILL.md",
     )
@@ -71,6 +70,7 @@ def test_user_owned_native_files_survive_rerun(tmp_path: Path) -> None:
 
     copilot = root / ".github/instructions/python.instructions.md"
     kiro = root / ".kiro/steering/python.md"
+    copilot.parent.mkdir(parents=True)
     copilot.write_text('---\napplyTo: "**/*.py"\n---\n\nRun pytest.\n', encoding="utf-8")
     kiro.write_text("---\ninclusion: always\n---\n\nRun pytest.\n", encoding="utf-8")
 
