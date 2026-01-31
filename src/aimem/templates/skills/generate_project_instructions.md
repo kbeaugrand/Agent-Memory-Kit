@@ -37,7 +37,16 @@ coding platforms. Treat code, tests, configuration, and authoritative documentat
    - Kiro: place targeted rules in `.kiro/steering/<concern>.md` with
      `inclusion: fileMatch` and the narrowest accurate `fileMatchPattern`. Use `inclusion: always`
      only for genuinely global rules, placed in the appropriate `product.md`, `tech.md`, or
-     `structure.md` file.
+       `structure.md` file. For every distinct non-global applicability, create a custom steering
+       file rather than adding the rule to those three always-included files. Use this frontmatter:
+       ```yaml
+       ---
+       inclusion: fileMatch
+       fileMatchPattern: "<narrowest workspace-relative glob>"
+       ---
+       ```
+       Do not finish with only `product.md`, `tech.md`, and `structure.md` when repository evidence
+       supports path-specific guidance.
 8. Prefer updating an existing rule over adding a duplicate. Make minimal edits and preserve
    unrelated guidance when an existing file already owns the same concern and applicability.
 9. Validate frontmatter, paths, scope, file cohesion, and consistency between enabled platforms.

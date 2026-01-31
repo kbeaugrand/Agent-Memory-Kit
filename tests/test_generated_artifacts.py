@@ -153,6 +153,20 @@ def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_pr
         assert "inclusion: always" in text
 
 
+def test_project_instruction_generation_requires_custom_kiro_steering(make_project) -> None:
+    root = make_project("--both")
+    skill_paths = (
+        root / ".github/skills/generate-project-instructions/SKILL.md",
+        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    )
+
+    for path in skill_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "For every distinct non-global applicability, create a custom steering" in text
+        assert 'fileMatchPattern: "<narrowest workspace-relative glob>"' in text
+        assert "Do not finish with only `product.md`, `tech.md`, and `structure.md`" in text
+
+
 def test_project_instruction_generation_honors_enabled_platforms(make_project) -> None:
     root = make_project("--copilot")
     skill = (root / ".github/skills/generate-project-instructions/SKILL.md").read_text(
