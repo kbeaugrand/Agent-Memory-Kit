@@ -19,15 +19,25 @@ and Kiro. Treat code, tests, configuration, and authoritative documentation as e
    configuration, documentation, representative files, or tests.
 3. Exclude generated output, vendored dependencies, caches, build artifacts, and isolated legacy
    code unless authoritative project guidance establishes them as current practice.
-4. Group only coherent rules with the same applicability. Prefer concise, actionable,
-   non-obvious instructions over broad repository summaries.
-5. Create or minimally update the corresponding native files:
-   - GitHub Copilot: `.github/instructions/<concern>.instructions.md`
-   - Kiro: `.kiro/steering/<concern>.md`
-6. Use the narrowest accurate `applyTo` or Kiro inclusion metadata. Reserve repository-wide
-   inclusion for rules that genuinely apply everywhere.
-7. Validate frontmatter, paths, scope, and consistency between platforms. Report the evidence used
-   and any uncertain practice intentionally omitted.
+4. Apply the lesson-learning scope rules before creating or updating a file. Determine each rule's
+   exact applicability by file type, directory, component, workflow, or the whole repository.
+   Do not group rules with different targets merely because they concern the same technology.
+5. Keep each focused file concise and cohesive. Split rules into separate files when they do not
+   share the same applicability so agents load only guidance relevant to the current target.
+   Prefer actionable, non-obvious instructions over broad repository summaries.
+6. Create or minimally update the corresponding native files:
+   - GitHub Copilot: place targeted rules in
+     `.github/instructions/<concern>.instructions.md` with the narrowest accurate workspace-relative
+     `applyTo` glob. Use multiple globs only when every rule applies to every listed target. Reserve
+     `applyTo: "**"` and `.github/copilot-instructions.md` for genuinely repository-wide rules.
+   - Kiro: place targeted rules in `.kiro/steering/<concern>.md` with
+     `inclusion: fileMatch` and the narrowest accurate `fileMatchPattern`. Use `inclusion: always`
+     only for genuinely global rules, placed in the appropriate `product.md`, `tech.md`, or
+     `structure.md` file.
+7. Prefer updating an existing rule over adding a duplicate. Make minimal edits and preserve
+   unrelated guidance when an existing file already owns the same concern and applicability.
+8. Validate frontmatter, paths, scope, file cohesion, and consistency between platforms. Report
+   the evidence used and any uncertain practice intentionally omitted.
 
 ## Boundaries
 

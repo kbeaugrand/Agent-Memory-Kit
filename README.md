@@ -63,8 +63,8 @@ aimem init -C path/to/project      # initialize a specific directory
 
 | Toolchain | Files |
 | --- | --- |
-| Kiro | `.kiro/steering/aimem-memory.md`, `product.md`, `tech.md`, `structure.md`; `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/skills/generate-project-instructions/SKILL.md` |
-| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/aimem-memory.instructions.md`; `.github/skills/lesson-learning/SKILL.md`, `.github/skills/generate-project-instructions/SKILL.md` |
+| Kiro | `.kiro/steering/aimem-memory.md`, `product.md`, `tech.md`, `structure.md`; `.kiro/skills/lesson-learning/SKILL.md`, `.kiro/skills/generate-project-instructions/SKILL.md`; `.kiro/hooks/lesson-learning.json` |
+| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/aimem-memory.instructions.md`; `.github/skills/lesson-learning/SKILL.md`, `.github/skills/generate-project-instructions/SKILL.md`; `.github/hooks/lesson-learning.json` |
 
 Kiro steering files, skills, and the detailed Copilot instruction file are seeded once and then
 left under user ownership. The aimem block in `.github/copilot-instructions.md` is
@@ -73,6 +73,11 @@ marker-managed, so content outside that block survives reruns.
 Both generated skills are user-invocable. Invoke `lesson-learning` to extract validated lessons
 from completed work, or `generate-project-instructions` to analyze repository practices and
 create scoped native guidance on demand.
+
+The generated `Stop` hooks steer the agent toward lesson learning as it finishes. Kiro appends an
+agent prompt and relies on normal skill matching to activate `lesson-learning`; it does not call a
+skill API directly. Copilot has no documented hook API for invoking a skill, so its command hook
+outputs context asking the agent to apply the skill through normal skill matching.
 
 ## Knowledge policy
 

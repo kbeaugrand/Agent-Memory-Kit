@@ -2,6 +2,36 @@
 
 from __future__ import annotations
 
+import json
+
+from aimem.templates.loader import load_template
+
+
+NATIVE_GUIDANCE_TEMPLATES = (
+    "copilot/aimem_memory.instructions.md",
+    "copilot/instructions_block.md",
+    "copilot/project_knowledge.instructions.md",
+    "copilot/project_knowledge_block.md",
+    "kiro/steering_aimem_memory.md",
+    "kiro/steering_project_knowledge.md",
+    "skills/generate_project_instructions.md",
+    "skills/lesson_learning.md",
+)
+
+UNSUPPORTED_MEMORY_ACTIONS = (
+    "{{PROJECT_MEMORY}}",
+    "{{USER_MEMORY}}",
+    "{{SESSION_MEMORY}}",
+    "{{AGENTS_MEMORY_DIR}}",
+    ".aimem/memory",
+    ".aimem/index",
+    "memory_propose",
+    "memory_approve",
+    "memory_search",
+    "record_memory.py",
+    "manage_memory.py",
+)
+
 
 def test_native_guidance_has_platform_frontmatter(make_project) -> None:
     root = make_project("--both")
@@ -12,6 +42,12 @@ def test_native_guidance_has_platform_frontmatter(make_project) -> None:
 
     assert kiro.startswith("---\ninclusion: always\n---")
     assert copilot.startswith('---\napplyTo: "**"\n---')
+
+
+def test_source_guidance_references_only_native_knowledge_actions() -> None:
+    for template in NATIVE_GUIDANCE_TEMPLATES:
+        guidance = load_template(template)
+        assert not any(action in guidance for action in UNSUPPORTED_MEMORY_ACTIONS), template
 
 
 def test_guidance_uses_native_storage_only(make_project) -> None:
@@ -84,6 +120,47 @@ def test_lesson_learning_scopes_knowledge_to_effective_targets(make_project) -> 
         assert "fileMatchPattern" in text
         assert "Split a file" in text
         assert "context bounded" in text
+
+
+def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
+    root = make_project("--both")
+    kiro = json.loads((root / ".kiro/hooks/lesson-learning.json").read_text(encoding="utf-8"))
+    copilot = json.loads(
+        (root / ".github/hooks/lesson-learning.json").read_text(encoding="utf-8")
+    )
+
+    kiro_hook = kiro["hooks"][0]
+    assert kiro_hook["trigger"] == "Stop"
+    assert kiro_hook["action"]["type"] == "agent"
+    assert "Apply" in kiro_hook["action"]["prompt"]
+    assert "lesson-learning" in kiro_hook["action"]["prompt"]
+
+    copilot_hook = copilot["hooks"]["Stop"][0]
+    assert copilot_hook["type"] == "command"
+    assert "printf" in copilot_hook["command"]
+    assert "Write-Output" in copilot_hook["windows"]
+    assert "lesson-learning" in copilot_hook["command"]
+    assert "lesson-learning" in copilot_hook["windows"]
+    assert not (root / ".github/hooks/lesson-learning.py").exists()
+
+
+def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_project) -> None:
+    root = make_project("--both")
+    skill_paths = (
+        root / ".github/skills/generate-project-instructions/SKILL.md",
+        root / ".kiro/skills/generate-project-instructions/SKILL.md",
+    )
+
+    for path in skill_paths:
+        text = path.read_text(encoding="utf-8")
+        assert "lesson-learning scope rules" in text
+        assert "exact applicability" in text
+        assert "Split rules into separate files" in text
+        assert "every rule applies to every listed target" in text
+        assert 'Reserve\n     `applyTo: "**"`' in text
+        assert "inclusion: fileMatch" in text
+        assert "fileMatchPattern" in text
+        assert "inclusion: always" in text
 
 
 def test_seed_steering_files_have_expected_sections(make_project) -> None:

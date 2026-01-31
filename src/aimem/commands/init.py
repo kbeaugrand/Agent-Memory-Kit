@@ -142,6 +142,11 @@ def _build_plan(
                     WriteMode.SEED,
                     _render("skills/generate_project_instructions.md"),
                 ),
+                project(
+                    paths.KIRO_HOOK_LESSON_LEARNING,
+                    WriteMode.SEED,
+                    _render("hooks/kiro_lesson_learning.json"),
+                ),
             ]
         )
 
@@ -167,6 +172,11 @@ def _build_plan(
                     paths.COPILOT_SKILL_GENERATE_PROJECT_INSTRUCTIONS,
                     WriteMode.SEED,
                     _render("skills/generate_project_instructions.md"),
+                ),
+                project(
+                    paths.COPILOT_HOOK_LESSON_LEARNING,
+                    WriteMode.SEED,
+                    _render("hooks/copilot_lesson_learning.json"),
                 ),
             ]
         )

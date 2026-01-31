@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "printf '%s\\n' 'Apply the lesson-learning skill to the completed work. Record only validated, reusable lessons; if no durable lesson emerged, make no changes.'",
+        "windows": "Write-Output 'Apply the lesson-learning skill to the completed work. Record only validated, reusable lessons; if no durable lesson emerged, make no changes.'",
+        "timeout": 10
+      }
+    ]
+  }
+}

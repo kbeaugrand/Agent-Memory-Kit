@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "lesson-learning-on-stop",
+      "description": "Extract durable lessons before the agent finishes its turn.",
+      "trigger": "Stop",
+      "action": {
+        "type": "agent",
+        "prompt": "Apply the lesson-learning skill to the completed work. Record only validated, reusable lessons; if no durable lesson emerged, make no changes."
+      },
+      "enabled": true
+    }
+  ]
+}
