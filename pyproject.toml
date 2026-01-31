@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "aimem"
 dynamic = ["version"]
-description = "Initialize native Kiro steering, GitHub Copilot instructions, and skills."
+description = "Initialize native Claude Code, Kiro, and GitHub Copilot project knowledge."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Kevin BEAUGRAND" }]
-keywords = ["ai", "memory", "kiro", "copilot", "cli", "steering", "instructions", "skills"]
+keywords = ["ai", "memory", "claude-code", "kiro", "copilot", "cli", "instructions", "skills"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",

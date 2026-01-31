@@ -17,3 +17,11 @@ COPILOT_AGENT_GENERATE_PROJECT_INSTRUCTIONS = (
     ".github/agents/generate-project-instructions.agent.md"
 )
 COPILOT_HOOK_LESSON_LEARNING = ".github/hooks/lesson-learning.json"
+
+# Claude Code artifacts.
+CLAUDE_SKILL_LESSON_LEARNING = ".claude/skills/lesson-learning/SKILL.md"
+CLAUDE_SKILL_PROJECT_KNOWLEDGE = ".claude/skills/project-knowledge/SKILL.md"
+CLAUDE_SKILL_PROJECT_KNOWLEDGE_REFERENCE = ".claude/skills/project-knowledge/reference.md"
+CLAUDE_SKILL_PROJECT_KNOWLEDGE_EXAMPLES = ".claude/skills/project-knowledge/examples.md"
+CLAUDE_AGENT_GENERATE_PROJECT_INSTRUCTIONS = ".claude/agents/generate-project-instructions.md"
+CLAUDE_SETTINGS = ".claude/settings.json"

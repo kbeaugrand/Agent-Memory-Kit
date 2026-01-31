@@ -20,29 +20,37 @@ def _snapshot(root: Path) -> dict[str, str]:
     }
 
 
+def _init_all(root: Path) -> None:
+    for provider in ("--kiro", "--copilot", "--claude"):
+        _init(root, provider)
+
+
 def test_rerun_is_noop(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
-    _init(root, "--both")
+    _init_all(root)
     first = _snapshot(root)
-    _init(root, "--both")
+    _init_all(root)
     assert _snapshot(root) == first
 
 
 def test_seed_files_are_preserved(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
-    _init(root, "--both")
+    _init_all(root)
 
     files = (
         root / ".kiro/steering/product.md",
         root / ".github/skills/lesson-learning/SKILL.md",
         root / ".kiro/agents/generate-project-instructions.md",
+        root / ".claude/skills/lesson-learning/SKILL.md",
+        root / ".claude/skills/project-knowledge/reference.md",
+        root / ".claude/skills/project-knowledge/examples.md",
     )
     for path in files:
         path.write_text("user-owned knowledge\n", encoding="utf-8")
 
-    _init(root, "--both")
+    _init_all(root)
     for path in files:
         assert path.read_text(encoding="utf-8") == "user-owned knowledge\n"
 
@@ -66,7 +74,7 @@ def test_copilot_managed_block_preserves_surrounding_content(tmp_path: Path) -> 
 def test_user_owned_native_files_survive_rerun(tmp_path: Path) -> None:
     root = tmp_path / "proj"
     root.mkdir()
-    _init(root, "--both")
+    _init_all(root)
 
     copilot = root / ".github/instructions/python.instructions.md"
     kiro = root / ".kiro/steering/python.md"
@@ -75,5 +83,23 @@ def test_user_owned_native_files_survive_rerun(tmp_path: Path) -> None:
     kiro.write_text("---\ninclusion: always\n---\n\nRun pytest.\n", encoding="utf-8")
 
     before = {path: path.read_text(encoding="utf-8") for path in (copilot, kiro)}
-    _init(root, "--both")
+    _init_all(root)
     assert {path: path.read_text(encoding="utf-8") for path in before} == before
+
+
+def test_claude_settings_merge_preserves_user_configuration(tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    settings = root / ".claude/settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        '{"permissions":{"deny":["Bash(rm *)"]},'
+        '"hooks":{"Stop":[{"hooks":[{"type":"command","command":"echo user"}]}]}}',
+        encoding="utf-8",
+    )
+
+    _init(root, "--claude")
+
+    content = settings.read_text(encoding="utf-8")
+    assert '"Bash(rm *)"' in content
+    assert "echo user" in content
+    assert "lesson-learning" in content

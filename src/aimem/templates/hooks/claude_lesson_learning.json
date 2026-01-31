@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Review the completed work in $ARGUMENTS. Return {\"ok\": true} if no validated reusable repository lesson emerged or lessons were already recorded. Otherwise return {\"ok\": false, \"reason\": \"Invoke the lesson-learning skill, record validated reusable lessons in the project-knowledge skill's reference.md or examples.md as appropriate, then finish.\"}.",
+            "continueOnBlock": true,
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

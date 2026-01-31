@@ -2,8 +2,8 @@
 
 **Project knowledge for AI coding agents, stored in each platform's native files.**
 
-`aimem init` creates Kiro steering, GitHub Copilot instructions, reusable lesson-learning skills,
-and project-instruction agents for a repository.
+`aimem init` creates a Claude Code project-knowledge skill, Kiro steering, GitHub Copilot
+instructions, reusable lesson-learning skills, and project-knowledge agents for a repository.
 Agents read and update the same native files your team reviews and commits, without a separate
 memory directory, metadata index, proposal store, or session/user memory.
 
@@ -16,8 +16,10 @@ decisions, validation commands, conventions, recurring mistakes, and domain term
 - Kiro stores project knowledge in `.kiro/steering/*.md`.
 - GitHub Copilot stores project knowledge in `.github/copilot-instructions.md` and
   `.github/instructions/*.instructions.md`.
-- Both platforms receive a lesson-learning skill and a project-instruction generation agent.
-- Toolchain selection controls which files are created.
+- Claude Code stores project knowledge in `.claude/skills/project-knowledge/`, with a concise
+  `SKILL.md` entrypoint and detailed `reference.md` and `examples.md` support files.
+- Every provider receives a lesson-learning skill and a project-instruction generation agent.
+- Each `init` invocation configures exactly one provider.
 - Existing user-authored content and focused instruction files are preserved.
 
 ## Quick start
@@ -26,19 +28,19 @@ Python 3.10 or newer is required.
 
 ```bash
 pipx install git+https://github.com/kbeaugrand/Agent-Memory-Kit.git
-aimem init --both
+aimem init --claude
 ```
 
 The npm package is a thin launcher for the same Python CLI:
 
 ```bash
-npx github:kbeaugrand/Agent-Memory-Kit init --both
+npx github:kbeaugrand/Agent-Memory-Kit init --claude
 ```
 
 For CI or scripted setup:
 
 ```bash
-npx github:kbeaugrand/Agent-Memory-Kit init --both --no-input -C path/to/project
+npx github:kbeaugrand/Agent-Memory-Kit init --claude --no-input -C path/to/project
 ```
 
 ## Usage
@@ -48,26 +50,35 @@ aimem --help
 aimem --version
 aimem init --help
 
-aimem init                         # interactive toolchain selection
-aimem init --both                  # create Kiro and Copilot files
+aimem init                         # interactive provider selection
+aimem init --claude                # create Claude Code project skills, agent, and hook
 aimem init --kiro                  # create Kiro steering, skill, and agent
 aimem init --copilot               # create Copilot instructions, skill, and agent
-aimem init --both --no-input       # non-interactive setup
-aimem init --yes                   # accept defaults; implies both toolchains
+aimem init --claude --no-input     # non-interactive Claude Code setup
+aimem init --yes                   # accept the default provider (Claude Code)
 aimem init --dry-run               # preview changes without writing
 aimem init -C path/to/project      # initialize a specific directory
 ```
 
+Run `init` once per provider when a repository uses several platforms:
+
+```bash
+aimem init --claude
+aimem init --copilot
+```
+
 ## Generated files
 
-| Toolchain | Files |
+| Provider | Files |
 | --- | --- |
 | Kiro | `.kiro/steering/product.md`, `tech.md`, `structure.md`; `.kiro/skills/lesson-learning/SKILL.md`; `.kiro/agents/generate-project-instructions.md`; `.kiro/hooks/lesson-learning.kiro.hook` |
 | GitHub Copilot | `.github/copilot-instructions.md`; `.github/skills/lesson-learning/SKILL.md`; `.github/agents/generate-project-instructions.agent.md`; `.github/hooks/lesson-learning.json` |
+| Claude Code | `.claude/skills/project-knowledge/{SKILL.md,reference.md,examples.md}`; `.claude/skills/lesson-learning/SKILL.md`; `.claude/agents/generate-project-instructions.md`; `.claude/settings.json` |
 
-Kiro steering files, skills, agents, and the detailed Copilot customization files are seeded once
-and then left under user ownership. The aimem block in `.github/copilot-instructions.md` is
-marker-managed, so content outside that block survives reruns.
+Kiro steering files, skills, agents, and detailed provider customizations are seeded once and then
+left under user ownership. The aimem block in `.github/copilot-instructions.md` is marker-managed,
+so content outside it survives reruns. Claude skill files are seeded once, and Claude hooks are
+merged into `.claude/settings.json` without replacing existing settings or hooks.
 
 Invoke the `lesson-learning` skill to extract validated lessons from completed work. Select the
 `generate-project-instructions` custom agent to analyze repository practices and create scoped
@@ -77,16 +88,18 @@ The generated `Stop` hooks steer the agent toward lesson learning as it finishes
 agent prompt and relies on normal skill matching to activate `lesson-learning`; it does not call a
 skill API directly. Copilot has no documented hook API for invoking a skill, so its command hook
 outputs context asking the agent to apply the skill through normal skill matching.
+Claude Code uses its native prompt-based `Stop` hook to continue only when a validated lesson still
+needs to be recorded.
 
 ## Knowledge policy
 
 Generated guidance tells agents to retain only validated, reusable, durable repository facts.
 Kiro lessons are added to the owning steering file or a focused steering file. Copilot lessons
 are added outside the managed block or to a focused `.instructions.md` file with suitable
-`applyTo` frontmatter. After completed work, the generated guidance directs agents to invoke the
-`lesson-learning` skill when a validated, reusable lesson may have emerged. The skill scopes
-targeted knowledge to narrow file globs or Kiro file matches, keeping unrelated instructions out
-of the active context as the knowledge base grows.
+`applyTo` frontmatter. Claude lessons are organized by concern in the project-knowledge skill's
+`reference.md`; focused cases go in `examples.md` only when they clarify how to apply a lesson.
+After completed work, the generated guidance directs agents to invoke the `lesson-learning` skill
+when a validated, reusable lesson may have emerged.
 
 Secrets, credentials, personal data, temporary plans, task progress, unvalidated assumptions,
 one-off details, and conversation transcripts do not belong in these files. Current explicit

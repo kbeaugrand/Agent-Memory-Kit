@@ -14,6 +14,7 @@ class Environment:
     is_git_repo: bool
     has_kiro: bool
     has_copilot: bool
+    has_claude: bool
 
 
 def detect(root: Path) -> Environment:
@@ -24,4 +25,5 @@ def detect(root: Path) -> Environment:
         is_git_repo=(root / ".git").exists(),
         has_kiro=(root / ".kiro").is_dir(),
         has_copilot=(root / ".github").is_dir(),
+        has_claude=(root / ".claude").is_dir(),
     )

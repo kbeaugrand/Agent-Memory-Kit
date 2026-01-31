@@ -28,23 +28,21 @@ def add_init_arguments(parser: argparse.ArgumentParser) -> None:
         help="Target project directory (default: current directory).",
     )
 
-    toolchains = parser.add_argument_group("toolchains")
-    toolchains.add_argument("--kiro", action="store_true", help="Generate Kiro artifacts.")
-    toolchains.add_argument(
+    providers = parser.add_mutually_exclusive_group()
+    providers.add_argument("--kiro", action="store_true", help="Generate Kiro artifacts.")
+    providers.add_argument(
         "--copilot", action="store_true", help="Generate GitHub Copilot artifacts."
     )
-    toolchains.add_argument(
-        "--both", action="store_true", help="Generate both Kiro and Copilot artifacts."
-    )
+    providers.add_argument("--claude", action="store_true", help="Generate Claude Code artifacts.")
 
     parser.add_argument(
         "-y",
         "--yes",
         action="store_true",
-        help="Accept defaults without prompting (implies both toolchains).",
+        help="Accept the default provider without prompting.",
     )
     parser.add_argument(
-        "--no-input", action="store_true", help="Never prompt; use defaults (for CI)."
+        "--no-input", action="store_true", help="Never prompt; requires a provider (for CI)."
     )
     parser.add_argument(
         "--dry-run",
@@ -61,11 +59,11 @@ def run_init(args: argparse.Namespace) -> int:
 
     interactive = sys.stdin.isatty() and not args.no_input and not args.yes
 
-    kiro, copilot = _select_toolchains(args, interactive)
-    if not kiro and not copilot:
-        print("aimem: nothing to do — no toolchains selected.")
+    provider = _select_provider(args, interactive)
+    if provider is None:
+        print("aimem: specify exactly one provider: --kiro, --copilot, or --claude.")
         return 1
-    plan = _build_plan(root, kiro=kiro, copilot=copilot)
+    plan = _build_plan(root, provider=provider)
 
     results = []
     for planned in plan:
@@ -76,20 +74,25 @@ def run_init(args: argparse.Namespace) -> int:
     _print_summary(
         results,
         env=env,
-        kiro=kiro,
-        copilot=copilot,
+        provider=provider,
         dry_run=args.dry_run,
         changed=changed,
     )
     return 0
 
 
-def _select_toolchains(args: argparse.Namespace, interactive: bool) -> tuple[bool, bool]:
-    if args.kiro or args.copilot or args.both:
-        return (bool(args.both or args.kiro), bool(args.both or args.copilot))
+def _select_provider(args: argparse.Namespace, interactive: bool) -> str | None:
+    if args.kiro:
+        return "kiro"
+    if args.copilot:
+        return "copilot"
+    if args.claude:
+        return "claude"
     if interactive:
-        return prompts.select_toolchains()
-    return True, True
+        return prompts.select_provider()
+    if args.yes:
+        return "claude"
+    return None
 
 
 def _render(relpath: str) -> str:
@@ -99,8 +102,7 @@ def _render(relpath: str) -> str:
 def _build_plan(
     root: Path,
     *,
-    kiro: bool,
-    copilot: bool,
+    provider: str,
 ) -> list[PlannedFile]:
     def project(key: str, mode: WriteMode, content: str, comment_style: str = "md") -> PlannedFile:
         return PlannedFile(
@@ -109,7 +111,7 @@ def _build_plan(
 
     plan: list[PlannedFile] = []
 
-    if kiro:
+    if provider == "kiro":
         plan.extend(
             [
                 project(
@@ -145,7 +147,7 @@ def _build_plan(
             ]
         )
 
-    if copilot:
+    if provider == "copilot":
         plan.extend(
             [
                 project(
@@ -171,6 +173,42 @@ def _build_plan(
             ]
         )
 
+    if provider == "claude":
+        plan.extend(
+            [
+                project(
+                    paths.CLAUDE_SKILL_PROJECT_KNOWLEDGE,
+                    WriteMode.SEED,
+                    _render("claude/project_knowledge_skill.md"),
+                ),
+                project(
+                    paths.CLAUDE_SKILL_PROJECT_KNOWLEDGE_REFERENCE,
+                    WriteMode.SEED,
+                    _render("claude/project_knowledge_reference.md"),
+                ),
+                project(
+                    paths.CLAUDE_SKILL_PROJECT_KNOWLEDGE_EXAMPLES,
+                    WriteMode.SEED,
+                    _render("claude/project_knowledge_examples.md"),
+                ),
+                project(
+                    paths.CLAUDE_SKILL_LESSON_LEARNING,
+                    WriteMode.SEED,
+                    _render("claude/lesson_learning.md"),
+                ),
+                project(
+                    paths.CLAUDE_AGENT_GENERATE_PROJECT_INSTRUCTIONS,
+                    WriteMode.SEED,
+                    _render("agents/claude_generate_project_instructions.md"),
+                ),
+                project(
+                    paths.CLAUDE_SETTINGS,
+                    WriteMode.JSON_MERGE,
+                    _render("hooks/claude_lesson_learning.json"),
+                ),
+            ]
+        )
+
     return plan
 
 
@@ -178,15 +216,14 @@ def _print_summary(
     results: list[FileResult],
     *,
     env: environment.Environment,
-    kiro: bool,
-    copilot: bool,
+    provider: str,
     dry_run: bool,
     changed: bool,
 ) -> None:
-    selected = ", ".join(name for name, on in (("Kiro", kiro), ("Copilot", copilot)) if on)
+    selected = {"kiro": "Kiro", "copilot": "Copilot", "claude": "Claude Code"}[provider]
     heading = "aimem init (dry run)" if dry_run else "aimem init"
     print(f"{heading} — {env.root}")
-    print(f"Toolchains: {selected}")
+    print(f"Provider: {selected}")
     print()
 
     for result in results:
@@ -198,7 +235,7 @@ def _print_summary(
         print("Dry run complete — no files were written.")
         return
     if changed:
-        print("Done. Review the generated steering, instruction, and skill files.")
+        print("Done. Review the generated provider-native project knowledge files.")
     else:
         print("Already up to date — no changes were necessary.")
     print("Rerun `aimem init` anytime to add missing platform files.")

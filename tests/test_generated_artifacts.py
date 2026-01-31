@@ -1,4 +1,4 @@
-"""Validate generated Kiro and GitHub Copilot project knowledge artifacts."""
+"""Validate generated provider-native project knowledge artifacts."""
 
 from __future__ import annotations
 
@@ -12,6 +12,11 @@ NATIVE_GUIDANCE_TEMPLATES = (
     "agents/copilot_generate_project_instructions.md",
     "agents/kiro_generate_project_instructions.md",
     "skills/lesson_learning.md",
+    "claude/project_knowledge_skill.md",
+    "claude/project_knowledge_reference.md",
+    "claude/project_knowledge_examples.md",
+    "claude/lesson_learning.md",
+    "agents/claude_generate_project_instructions.md",
 )
 
 UNSUPPORTED_MEMORY_ACTIONS = (
@@ -33,7 +38,7 @@ def test_source_guidance_references_only_native_knowledge_actions() -> None:
 
 
 def test_guidance_uses_native_storage_only(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--copilot")
     guidance = (root / ".github/copilot-instructions.md").read_text(encoding="utf-8")
 
     assert ".github/instructions" in guidance
@@ -43,7 +48,7 @@ def test_guidance_uses_native_storage_only(make_project) -> None:
 
 
 def test_guidance_uses_lesson_learning_to_maintain_knowledge(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--copilot")
     guidance_paths = (root / ".github/copilot-instructions.md",)
 
     for path in guidance_paths:
@@ -54,12 +59,15 @@ def test_guidance_uses_lesson_learning_to_maintain_knowledge(make_project) -> No
 
 
 def test_customizations_use_native_project_knowledge_only(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--kiro", "--copilot", "--claude")
     skill_paths = (
         root / ".github/skills/lesson-learning/SKILL.md",
         root / ".github/agents/generate-project-instructions.agent.md",
         root / ".kiro/skills/lesson-learning/SKILL.md",
         root / ".kiro/agents/generate-project-instructions.md",
+        root / ".claude/skills/lesson-learning/SKILL.md",
+        root / ".claude/agents/generate-project-instructions.md",
+        root / ".claude/skills/project-knowledge/SKILL.md",
     )
 
     for path in skill_paths:
@@ -69,8 +77,29 @@ def test_customizations_use_native_project_knowledge_only(make_project) -> None:
         assert "{{" not in text
 
 
+def test_claude_knowledge_uses_a_dedicated_skill(make_project) -> None:
+    root = make_project("--claude")
+    skill = (root / ".claude/skills/project-knowledge/SKILL.md").read_text(encoding="utf-8")
+    reference = (root / ".claude/skills/project-knowledge/reference.md").read_text(encoding="utf-8")
+    examples = (root / ".claude/skills/project-knowledge/examples.md").read_text(encoding="utf-8")
+    lesson_learning = (root / ".claude/skills/lesson-learning/SKILL.md").read_text(encoding="utf-8")
+    agent = (root / ".claude/agents/generate-project-instructions.md").read_text(encoding="utf-8")
+
+    assert "user-invocable: false" in skill
+    assert "[reference.md](reference.md)" in skill
+    assert "[examples.md](examples.md)" in skill
+    assert "validated repository-specific lessons" in reference
+    assert "focused examples" in examples
+    assert "project-knowledge/reference.md" in lesson_learning
+    assert "project-knowledge/" in agent
+    assert "reference.md" in agent
+    assert "examples.md" in agent
+    assert not (root / "CLAUDE.md").exists()
+    assert not (root / ".claude/rules").exists()
+
+
 def test_lesson_learning_scopes_knowledge_to_effective_targets(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--kiro", "--copilot")
     skill_paths = (
         root / ".github/skills/lesson-learning/SKILL.md",
         root / ".kiro/skills/lesson-learning/SKILL.md",
@@ -88,11 +117,10 @@ def test_lesson_learning_scopes_knowledge_to_effective_targets(make_project) -> 
 
 
 def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
-    root = make_project("--both")
-    kiro = json.loads(
-        (root / ".kiro/hooks/lesson-learning.kiro.hook").read_text(encoding="utf-8")
-    )
+    root = make_project("--kiro", "--copilot", "--claude")
+    kiro = json.loads((root / ".kiro/hooks/lesson-learning.kiro.hook").read_text(encoding="utf-8"))
     copilot = json.loads((root / ".github/hooks/lesson-learning.json").read_text(encoding="utf-8"))
+    claude = json.loads((root / ".claude/settings.json").read_text(encoding="utf-8"))
 
     assert kiro["enabled"] is True
     assert kiro["version"] == "1"
@@ -108,9 +136,14 @@ def test_end_hooks_steer_agents_toward_lesson_learning(make_project) -> None:
     assert "lesson-learning" in copilot_hook["windows"]
     assert not (root / ".github/hooks/lesson-learning.py").exists()
 
+    claude_hook = claude["hooks"]["Stop"][0]["hooks"][0]
+    assert claude_hook["type"] == "prompt"
+    assert claude_hook["continueOnBlock"] is True
+    assert "lesson-learning" in claude_hook["prompt"]
+
 
 def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--kiro", "--copilot")
     agent_paths = (
         root / ".github/agents/generate-project-instructions.agent.md",
         root / ".kiro/agents/generate-project-instructions.md",
@@ -129,7 +162,7 @@ def test_project_instruction_generation_uses_lesson_learning_scope_rules(make_pr
 
 
 def test_project_instruction_generation_requires_custom_kiro_steering(make_project) -> None:
-    root = make_project("--both")
+    root = make_project("--kiro", "--copilot")
     agent_paths = (
         root / ".github/agents/generate-project-instructions.agent.md",
         root / ".kiro/agents/generate-project-instructions.md",

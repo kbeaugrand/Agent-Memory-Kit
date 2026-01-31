@@ -20,12 +20,13 @@ def make_project(tmp_path: Path) -> MakeProject:
     """Return a factory that runs ``aimem init`` into a fresh temp directory."""
     counter = {"n": 0}
 
-    def _make(*args: str) -> Path:
+    def _make(*providers: str) -> Path:
         counter["n"] += 1
         root = tmp_path / f"proj{counter['n']}"
         root.mkdir()
-        exit_code = main(["init", "-C", str(root), "--no-input", *args])
-        assert exit_code == 0
+        for provider in providers:
+            exit_code = main(["init", "-C", str(root), "--no-input", provider])
+            assert exit_code == 0
         return root
 
     return _make

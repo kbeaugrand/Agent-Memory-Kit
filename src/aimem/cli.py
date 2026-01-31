@@ -13,7 +13,7 @@ def build_parser() -> argparse.ArgumentParser:
     """Build the top-level argument parser."""
     parser = argparse.ArgumentParser(
         prog="aimem",
-        description=("Initialize native Kiro steering, GitHub Copilot instructions, and skills."),
+        description=("Initialize native Claude Code, Kiro, and GitHub Copilot project knowledge."),
         allow_abbrev=False,
     )
     parser.add_argument(
@@ -27,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_parser = subparsers.add_parser(
         "init",
         help="Initialize native AI project knowledge files and skills.",
-        description="Initialize Kiro steering, GitHub Copilot instructions, and skills.",
+        description="Initialize one provider's native AI project knowledge files and skills.",
         allow_abbrev=False,
     )
     add_init_arguments(init_parser)
